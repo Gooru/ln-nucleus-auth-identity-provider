@@ -12,15 +12,15 @@ Identity provider authentication
    - SAML
 
 **Configuration**
-    
-    ```config.json``` file has  all the configuration details like callback urls, client ID or Key etc.
+   
+   ```config.json``` file has  all the configuration details like callback urls, client ID or Key etc.
 
 ##How to setup ?
-    
-    - Install  nodejs
-    - Clone the project
-    - In home path of the project install all packages, using below command,
-    - ```npm install && npm install -g forever```
+   
+   - Install  nodejs
+   - Clone the project
+   - In home path of the project install all packages, using below command,
+   - ```npm install && npm install -g forever```
 
 
 
