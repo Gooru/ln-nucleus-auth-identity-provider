@@ -1,0 +1,24 @@
+{  
+   "gmail":{
+      "redirectUrl":"//www.gooru.org",
+      "clientID":"763475549342-7rqgp6d7dmh0991sudlg2uqu866bn35n.apps.googleusercontent.com",
+      "clientSecret":"pcy2Rw_xmF2Ep0GSWBsCiZaA",
+      "scopeProfile":"https://www.googleapis.com/auth/userinfo.profile",
+      "scopeEmail":"https://www.googleapis.com/auth/userinfo.email"
+   },
+   "wsfed":{  
+      "idpUrl":"https://signin.silverbacklearning.net/issue/wsfed",
+      "realm":"http://local.gooru.org/",
+      "thumbprint" : "2F2275E98D56E0F078E34F8C20E0E633FFA5DD4B"
+   },
+   "saml":{  
+      "entryPoint":"https://openidp.feide.no/simplesaml/saml2/idp/SSOService.php",
+      "issuer":"local.gooru.org",
+      "certificate":"MIICizCCAfQCCQCY8tKaMc0BMjANBgkqhkiG9w0BAQUFADCBiTELMAkGA1UEBhMCTk8xEjAQBgNVBAgTCVRyb25kaGVpbTEQMA4GA1UEChMHVU5JTkVUVDEOMAwGA1UECxMFRmVpZGUxGTAXBgNVBAMTEG9wZW5pZHAuZmVpZG"
+   },
+   "client_id":"ba956a97-ae15-11e5-a302-f8a963065976",
+   "client_key":"c2hlZWJhbkBnb29ydWxlYXJuaW5nLm9yZw==",
+   "baseUrl":"http://local.gooru.org:3000",
+   "hostname":"http://local.gooru.org:8080",
+   "domainName":"local.gooru.org:3000"
+}
