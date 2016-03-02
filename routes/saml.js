@@ -15,7 +15,7 @@ passport.deserializeUser(function(user, done) {
     done(null, user);
 });
 var samlStrategy = new SamlStrategy.Strategy({
-        callbackUrl: config.baseUrl + '/idp-auth/saml/callback',
+        callbackUrl: config.baseUrl + '/nucleus-auth-idp/saml/callback',
         entryPoint: config.saml.entryPoint,
         cert: config.saml.certificate,
         issuer: config.saml.issuer

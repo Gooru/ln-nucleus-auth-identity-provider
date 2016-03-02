@@ -16,7 +16,7 @@ passport.deserializeUser(function(obj, done) {
 passport.use(new GoogleStrategy({
         clientID: config.gmail.clientID,
         clientSecret: config.gmail.clientSecret,
-        callbackURL: config.baseUrl + '/idp-auth/google/callback'
+        callbackURL: config.baseUrl + '/nucleus-auth-idp/google/callback'
     },
 
     function(request, accessToken, refreshToken, profile, done) {

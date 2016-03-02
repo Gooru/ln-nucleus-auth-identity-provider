@@ -15,9 +15,9 @@ app.use(bodyParser.urlencoded({
 app.use(passport.initialize());
 app.use(passport.session());
 app.enable('trust proxy');
-app.use('/idp-auth/google', gmail);
-app.use('/idp-auth/wsfed', wsfed);
-app.use('/idp-auth/saml', saml);
+app.use('/nucleus-auth-idp/google', gmail);
+app.use('/nucleus-auth-idp/wsfed', wsfed);
+app.use('/nucleus-auth-idp/saml', saml);
 
 
 app.use(function(req, res, next) {
