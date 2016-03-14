@@ -17,3 +17,6 @@ Features
 | Request Body Type | None |
 | Response Code | 302 |
 
+**API URL**
+
+http://nucleus.gooru.org/api/nucleus-auth-idp/v1/google
