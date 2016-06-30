@@ -47,7 +47,7 @@ router.post('/login', passport.authenticate('wsfed-saml2', {
         options.user.firstname = (profile.fisrtname != null ? profile['http://identityserver.thinktecture.com/claims/profileclaims/firstname'] : "firstname");
         options.user.lastname = (profile.lastname != null ? profile['http://identityserver.thinktecture.com/claims/profileclaims/lastname'] : "lastname");
         var role = profile['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-        options.grant_type = "WSFED";
+        options.grant_type = "wsfed";
 	options.user.username = "SBLMP" + username.replace(/[^a-z\d\s]+/gi, "");
 	options.user.username = options.user.username.substring(0,18);
 	

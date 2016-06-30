@@ -19,7 +19,7 @@ function authenticate(req, res, options) {
             if (!e && response.status == 200) {
                 var json = JSON.parse(response.text);
                 res.statusCode = 302;
-               var redirectUrl = null;
+                var redirectUrl = null;
                 var callBackMethod = 'POST';
                 if (req.query.state != null) {
                     redirectUrl = req.query.state;
@@ -27,7 +27,6 @@ function authenticate(req, res, options) {
                   redirectUrl= wreply;
                }
                 redirectUrl += "?access_token=" + json.access_token;
-                console.log(redirectUrl);
                 res.setHeader('Location', redirectUrl);
                }  else {
                 logger.error(" Authentication failure :");
