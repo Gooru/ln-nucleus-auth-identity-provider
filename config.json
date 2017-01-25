@@ -16,9 +16,16 @@
       "issuer":"nucleus.gooru.org",
       "certificate":"MIICizCCAfQCCQCY8tKaMc0BMjANBgkqhkiG9w0BAQUFADCBiTELMAkGA1UEBhMCTk8xEjAQBgNVBAgTCVRyb25kaGVpbTEQMA4GA1UEChMHVU5JTkVUVDEOMAwGA1UECxMFRmVpZGUxGTAXBgNVBAMTEG9wZW5pZHAuZmVpZG"
    },
+   "shibboleth":{
+	  "callbackUrl": "http://27.251.209.100:3000/api/nucleus-auth-idp/v1/shibboleth/callback",
+	  "entryPoint": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",
+	  "issuer": "https://27.251.209.100/shibboleth",
+	  "forceAuthn": true,
+	  "identifierFormat": null
+   },
    "client_id":"ba956a97-ae15-11e5-a302-f8a963065976",
    "client_key":"c2hlZWJhbkBnb29ydWxlYXJuaW5nLm9yZw==",
-   "baseUrl":"http://nucleus.gooru.org",
-   "hostname":"http://nucleus.gooru.org",
-   "domainName":"nucleus.gooru.org"
+   "baseUrl":"http://nucleus-qa.gooru.org",
+   "hostname":"http://nucleus-qa.gooru.org",
+   "domainName":"nucleus-qa.gooru.org"
 }

@@ -1,12 +1,13 @@
 var express = require('express');
 var router = express.Router();
-var passport = require('passport');
+var Passport = require('passport').Passport;
 var SamlStrategy = require('passport-saml');
 var config = require('../config');
 var logger = require('../log');
 var authenticate = require('./authenticate');
 var fs = require('fs');
 
+var passport = new Passport();
 
 passport.serializeUser(function(user, done) {
     done(null, user);
