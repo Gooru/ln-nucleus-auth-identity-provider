@@ -14,7 +14,7 @@ function authenticate(req, res, options) {
     var wreply = url['wreply'];
     superagent.post(config.hostname + '/api/nucleus-auth/v1/authorize').send(defaultOptions).set('user-agent',req.headers['user-agent'])
         .end(function(e, response) {
-           var xForward = typeof(req.headers['x-forwarded-proto']) !== "undefined" ? req.headers['x-forwarded-proto'] :  req.protocol;
+           var xForward = typeof(req.headers['x-forwarded-proto']) !== "undefined" ? req.headers['x-forwarded-proto'] : req.protocol;
             var domainName =  xForward  + '://' + config.domainName;
             if (!e && response.status == 200) {
                 var json = JSON.parse(response.text);

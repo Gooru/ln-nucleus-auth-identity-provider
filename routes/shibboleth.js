@@ -17,7 +17,7 @@ passport.deserializeUser(function(user, done) {
 });
 
 var shibStrategy = new SamlStrategy.Strategy({
-        callbackUrl: config.shibboleth.callbackUrl,
+        callbackUrl: config.baseUrl + config.shibboleth.callbackEndPoint,
         entryPoint: config.shibboleth.entryPoint,
         issuer: config.shibboleth.issuer,
 		forceAuthn: config.shibboleth.forceAuthn,
@@ -56,6 +56,7 @@ router.post('/callback',
     }),
     function(req, res) {
 		var profile = req.user;
+		populateAttributesForUserAutoProvision(profile);
 		var options = {};
         options.user = {};
 		options.user.firstname = (profile.firstName != null ? profile.firstName : "firstname");
@@ -67,6 +68,21 @@ router.post('/callback',
 
     }
 );
+
+var populateAttributesForUserAutoProvision = function(profile) {
+	//  Populating eduPersonPrincipalName
+	if (!profile.eppn && profile['urn:oid:1.3.6.1.4.1.5923.1.1.1.6']) {
+		profile.eppn = profile['urn:oid:1.3.6.1.4.1.5923.1.1.1.6'];
+	}
+	// Populating givenName
+	if (!profile.firstName && profile['urn:oid:2.5.4.42']) {
+		profile.firstName = profile['urn:oid:2.5.4.42'];
+	}
+	// Populating sn
+	if (!profile.lastName && profile['urn:oid:2.5.4.4']) {
+		profile.lastName = profile['urn:oid:2.5.4.4'];
+	}
+};
 
 router.get('/generateMetadata', function(req, res) {
   res.type('application/xml');
