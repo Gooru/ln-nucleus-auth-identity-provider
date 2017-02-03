@@ -4,6 +4,7 @@ var passport = require('passport');
 var gmail = require('./routes/gmail');
 var wsfed = require('./routes/wsfed');
 var saml = require('./routes/saml');
+var shibboleth = require('./routes/shibboleth');
 
 var logger = require('./log');
 var app = express();
@@ -18,6 +19,7 @@ app.enable('trust proxy');
 app.use('/api/nucleus-auth-idp/v1/google', gmail);
 app.use('/api/nucleus-auth-idp/v1/wsfed', wsfed);
 app.use('/api/nucleus-auth-idp/v1/saml', saml);
+app.use('/api/nucleus-auth-idp/v1/shibboleth', shibboleth);
 
 
 app.use(function(req, res, next) {
@@ -32,8 +34,6 @@ app.use(function(err, req, res, next) {
     logger.error(err);
     logger.error("request URL" + req.url);
 });
-
-
 
 
 module.exports = app;
