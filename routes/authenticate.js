@@ -16,7 +16,7 @@ function authenticate(req, res, options) {
         .end(function(e, response) {
            var xForward = typeof(req.headers['x-forwarded-proto']) !== "undefined" ? req.headers['x-forwarded-proto'] : req.protocol;
             var domainName =  xForward  + '://' + config.domainName;
-            if (!e && response.status == 200) {
+            if (!e && (response.status == 200 || response.status == 201)) {
                 var json = JSON.parse(response.text);
                 res.statusCode = 302;
                 var redirectUrl = null;
