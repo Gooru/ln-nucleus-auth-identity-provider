@@ -49,8 +49,8 @@ router.get('/callback',
         var profile = req.user;
         var options = {};
         options.user = {};
-        options.user.firstname = profile._json.given_name;
-        options.user.lastname = profile._json.family_name;
+        options.user.first_name = profile._json.given_name;
+        options.user.last_name = profile._json.family_name;
         options.user.identity_id = profile._json.email;
         options.grant_type = "google";
          logger.info("Callback from google ..." + profile._json.email);
