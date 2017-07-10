@@ -35,7 +35,6 @@ WSFEDConfiguration.prototype.getConfig = function(appCredentials, callback) {
             }
         });
     } catch(error) {
-        console.log(error);
         callback(error, null);
     }
 };
