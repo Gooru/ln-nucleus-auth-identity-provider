@@ -1,13 +1,13 @@
 var DBTransaction = require('./DBTransaction');
 var DBTransaction = new DBTransaction();
 
-function PGTenant() {
+function PGEntityTenant() {
     
 };
 
 const SELECT_TENANT = "select wsfed_config from tenant where id = $1::uuid AND secret = $2::varchar";
 
-PGTenant.prototype.getTenant = function(params, callback) {
+PGEntityTenant.prototype.getTenant = function(params, callback) {
     DBTransaction.executeQuery(SELECT_TENANT, params , function(err, res) {
         if (err) { 
             callback(err, {});
@@ -18,4 +18,4 @@ PGTenant.prototype.getTenant = function(params, callback) {
     });
 };
 
-module.exports = PGTenant;
+module.exports = PGEntityTenant;

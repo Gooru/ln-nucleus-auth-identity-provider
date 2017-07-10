@@ -1,8 +1,8 @@
 const config = require('../config');
 var WSFEDStrategy = require('passport-wsfed-saml2').Strategy;
 const Utils = require('../utils/HelperUtils');
-var PGTenant = require('../repositories/PGTenant');
-var PGTenant = new PGTenant();
+var PGEntityTenant = require('../repositories/PGEntityTenant');
+var PGEntityTenant = new PGEntityTenant();
 
 function WSFEDConfiguration() {
 
@@ -11,7 +11,7 @@ function WSFEDConfiguration() {
 WSFEDConfiguration.prototype.getConfig = function(appCredentials, callback) {
    var params = [appCredentials.client_id, Utils.encryptClientKey(appCredentials.client_key)];
     try {
-        PGTenant.getTenant(params, function(err, res) { 
+        PGEntityTenant.getTenant(params, function(err, res) { 
             if (!err) {
                 if (typeof(res.wsfed_config) == 'undefined') {
                     var err = new Error("Invalid client Id or Secret Key");
