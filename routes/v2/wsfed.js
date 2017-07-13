@@ -35,39 +35,41 @@ router.post("/login", (req, res, next) => {
   const url = queryString.parse(req.headers.referer);
   const wreply = url['wreply'];
   const data =  wreply.split('~~');
-  const options = {};
+  const requestBody = {};
   const redirectUrl = data[0];
-  options.client_id = data[1];
-  options.client_key = data[2];
-  passport.authenticate(getConfigStorageKey(options.client_id), (err, profile, info) => {
+  const clientId = data[1];
+  const clientKey = data[2];
+  const basicAuthToken = new Buffer((clientId + ":" + clientKey)).toString('base64');
+  passport.authenticate(getConfigStorageKey(clientId), (err, profile, info) => {
         var username = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'];
-        options.user = {};
-        options.user.first_name = profile['http://identityserver.thinktecture.com/claims/profileclaims/firstname'];
-        options.user.last_name =  profile['http://identityserver.thinktecture.com/claims/profileclaims/lastname'];
+        requestBody.user = {};
+        requestBody.user.first_name = profile['http://identityserver.thinktecture.com/claims/profileclaims/firstname'];
+        requestBody.user.last_name =  profile['http://identityserver.thinktecture.com/claims/profileclaims/lastname'];
         var role = profile['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-        options.grant_type = "wsfed";
-	options.user.username = username.replace(/[^a-z\d\s]+/gi, "");
-	options.user.username = options.user.username.substring(0,18);
-        if(profile.email != null) {
-            options.user.identity_id = profile.email;
+        requestBody.grant_type = "wsfed";
+	if(username != null) {
+            requestBody.user.username = username.replace(/[^a-z\d\s]+/gi, "");
+            requestBody.user.username = requestBody.user.username.substring(0,13);
+            requestBody.user.reference_id = requestBody.user.username;
         }
-        else {
-            options.user.identity_id = options.user.username;
+        else if (profile.email != null) {
+            requestBody.user.reference_id = profile.email;
         }
-        authenticate(req, res, redirectUrl, options);
+        if (profile.email != null) { 
+            requestBody.user.email = profile.email;
+        }
+        authenticate(req, res, redirectUrl, requestBody, basicAuthToken);
   })(req, res, next)
 });
 
 
-function authenticate(req, res, redirectUrl, options) {
-    superagent.post(config.hostname + '/api/nucleus-auth/v1/authorize').send(options).set('user-agent',req.headers['user-agent'])
-        .end(function(e, response) {
+function authenticate(req, res, redirectUrl, requestBody, basicAuthToken) {
+    superagent.post(config.hostname + '/api/internal/v2/sso/wsfed').send(requestBody).set('user-agent',req.headers['user-agent']).set('authorization', 'Basic ' + basicAuthToken).end(function(e, response) {
            var xForward = typeof(req.headers['x-forwarded-proto']) !== "undefined" ? req.headers['x-forwarded-proto'] : req.protocol;
             var domainName =  xForward  + '://' + config.domainName;
             if (!e && (response.status == 200 || response.status == 201)) {
                 var json = JSON.parse(response.text);
                 res.statusCode = 302;
-                var callBackMethod = 'POST';
                 if (typeof(redirectUrl) === "undefined" || redirectUrl.length <= 0) {
                     redirectUrl = domainName;
                 } 
