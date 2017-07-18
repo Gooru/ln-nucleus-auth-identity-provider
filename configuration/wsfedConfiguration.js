@@ -18,7 +18,7 @@ WSFEDConfiguration.prototype.getConfig = function(appCredentials, callback) {
                     err.status = 401;
                     return callback(err, null);
                 } 
-                var stratgey =  new WSFEDStrategy({
+                var strategy =  new WSFEDStrategy({
                                     realm: res.config.realm,
                                     homeRealm: res.config.homeRealm,
                                     identityProviderUrl: res.config.idpUrl,
@@ -29,7 +29,7 @@ WSFEDConfiguration.prototype.getConfig = function(appCredentials, callback) {
                                         return done(null, profile);
                                     })
                                 });
-                return callback(err, stratgey, res.config);
+                return callback(err, strategy, res.config);
             } else { 
                return  callback(err, null, null);
             }

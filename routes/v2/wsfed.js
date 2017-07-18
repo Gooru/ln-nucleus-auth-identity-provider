@@ -13,9 +13,9 @@ const configKeyPrefix = "WSFED-";
 router.get('/login', function(req, res, next) {
     logger.info("Version 2 : Wsfed  signin entry point ...");
     const appCredentials = getAppCredentials(req);
-    WSFEDConfiguration.getConfig(appCredentials, function(err, stratgey, wsfedConfig) {
+    WSFEDConfiguration.getConfig(appCredentials, function(err, strategy, wsfedConfig) {
         if (!err) {
-            passport.use(getConfigStorageKey(appCredentials.client_id) , stratgey);
+            passport.use(getConfigStorageKey(appCredentials.client_id) , strategy);
             passport.authenticate(getConfigStorageKey(appCredentials.client_id), {
                 failureRedirect: '/',
                 failureFlash: true,
