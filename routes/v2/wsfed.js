@@ -13,17 +13,13 @@ const configKeyPrefix = "WSFED-";
 router.get('/login', function(req, res, next) {
     logger.info("Version 2 : Wsfed  signin entry point ...");
     const appCredentials = getAppCredentials(req);
-    var callbackUrl = req.query.redirectURI;
-    if (typeof(callbackUrl) == 'undefined' || callbackUrl.length == 0) {
-      callbackUrl  = req.protocol  + '://' + config.domainName;
-    }
-    WSFEDConfiguration.getConfig(appCredentials, function(err, wsfedConfig) {
+    WSFEDConfiguration.getConfig(appCredentials, function(err, stratgey, wsfedConfig) {
         if (!err) {
-            passport.use(getConfigStorageKey(appCredentials.client_id) , wsfedConfig);
+            passport.use(getConfigStorageKey(appCredentials.client_id) , stratgey);
             passport.authenticate(getConfigStorageKey(appCredentials.client_id), {
                 failureRedirect: '/',
-                failureFlash: true ,
-                wreply: callbackUrl + '~~' + appCredentials.client_id + '~~' + appCredentials.client_key
+                failureFlash: true,
+                wctx: wsfedConfig.redirectURI + '~~' + appCredentials.client_id + '~~' + appCredentials.client_key
             })(req, res, next);
         } else {
             next(err);
@@ -32,9 +28,8 @@ router.get('/login', function(req, res, next) {
 });
 
 router.post("/login", (req, res, next) => {
-  const url = queryString.parse(req.headers.referer);
-  const wreply = url['wreply'];
-  const data =  wreply.split('~~');
+  const wctx = req.body.wctx;
+  const data =  wctx.split('~~');
   const requestBody = {};
   const redirectUrl = data[0];
   const clientId = data[1];
@@ -76,7 +71,7 @@ function authenticate(req, res, redirectUrl, requestBody, basicAuthToken) {
                 redirectUrl += "?access_token=" + json.access_token;
                 res.setHeader('Location', redirectUrl);
             } else {
-                logger.error("WSFED Authentication failure :");
+                logger.error("V2 WSFED Authentication failure :");
                 logger.error(response.text);
                 res.statusCode = 302;
                 res.setHeader('Location', domainName);
@@ -91,7 +86,7 @@ function getAppCredentials(request) {
    if (typeof(request.query.client_key) != 'undefined' && typeof(request.query.client_id) != 'undefined') { 
        reqparams.client_id = request.query.client_id;
        reqparams.client_key = request.query.client_key;
-   } else { 
+   } else {
         // setting default value of Gooru Client key and Id, If client id and key does not exist in request parameter
         reqparams.client_key = config.client_key;
         reqparams.client_id =  config.client_id;

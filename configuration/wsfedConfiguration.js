@@ -22,20 +22,20 @@ WSFEDConfiguration.prototype.getConfig = function(appCredentials, callback) {
                                     realm: res.config.realm,
                                     homeRealm: res.config.homeRealm,
                                     identityProviderUrl: res.config.idpUrl,
-                                    thumbprint: res.config.thumbprint       
+                                    thumbprint: res.config.thumbprint
                                 },
                                 function(profile, done) {
                                     process.nextTick(function() {
                                         return done(null, profile);
                                     })
                                 });
-                callback(err, stratgey);
+                return callback(err, stratgey, res.config);
             } else { 
-                callback(err, null);
+               return  callback(err, null, null);
             }
         });
     } catch(error) {
-        callback(error, null);
+        return callback(error, null, null);
     }
 };
 
