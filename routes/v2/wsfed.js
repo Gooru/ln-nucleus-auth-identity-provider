@@ -59,7 +59,7 @@ router.post("/login", (req, res, next) => {
 
 
 function authenticate(req, res, redirectUrl, requestBody, basicAuthToken) {
-    superagent.post(config.hostname + '/api/internal/v2/sso/wsfed').send(requestBody).set('user-agent',req.headers['user-agent']).set('authorization', 'Basic ' + basicAuthToken).end(function(e, response) {
+    superagent.post(config.authHandlerInternalHostName + '/api/internal/v2/sso/wsfed').send(requestBody).set('user-agent',req.headers['user-agent']).set('authorization', 'Basic ' + basicAuthToken).end(function(e, response) {
            var xForward = typeof(req.headers['x-forwarded-proto']) !== "undefined" ? req.headers['x-forwarded-proto'] : req.protocol;
             var domainName =  xForward  + '://' + config.domainName;
             if (!e && (response.status == 200 || response.status == 201)) {
