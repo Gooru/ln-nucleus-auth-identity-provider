@@ -5,7 +5,7 @@ function PGEntitySSOConfig() {
     
 };
 
-const SELECT_SSO_CONFIG = "select config from sso_config where id = $1::uuid AND secret = $2::varchar AND sso_type= $3::varchar";
+const SELECT_SSO_CONFIG = "select config from sso_config where id = $1::uuid AND sso_type= $2::varchar";
 
 PGEntitySSOConfig.prototype.getSSOConfig = function(params, callback) {
     DBTransaction.executeQuery(SELECT_SSO_CONFIG, params , function(err, res) {
