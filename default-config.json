@@ -20,5 +20,6 @@
    "client_key":"c2hlZWJhbkBnb29ydWxlYXJuaW5nLm9yZw==",
    "baseUrl":"http://local.gooru.org:3000",
    "hostname":"http://local.gooru.org:8080",
-   "domainName":"local.gooru.org:3000"
+   "domainName":"local.gooru.org:3000",
+   "authHandlerInternalHostName": "http://127.0.0.1:8080"
 }
