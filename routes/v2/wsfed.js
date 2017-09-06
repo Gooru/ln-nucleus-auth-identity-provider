@@ -12,28 +12,33 @@ const configKeyPrefix = "WSFED-";
 
 router.get('/login', function(req, res, next) {
     logger.info("Version 2 : Wsfed  signin entry point ...");
-    const appCredentials = getAppCredentials(req);
-    WSFEDConfiguration.getConfig(appCredentials, function(err, strategy, wsfedConfig) {
+    const client_id = req.query.client_id;
+    if (typeof(client_id) == 'undefined') { 
+         var err = new Error("Client id missing.");
+         err.status = 401;
+         return next(err);
+    }
+    WSFEDConfiguration.getConfig(client_id, function(err, strategy, wsfedConfig) {
         if (!err) {
-            passport.use(getConfigStorageKey(appCredentials.client_id) , strategy);
-            passport.authenticate(getConfigStorageKey(appCredentials.client_id), {
+            passport.use(getConfigStorageKey(client_id), strategy);
+            passport.authenticate(getConfigStorageKey(client_id), {
                 failureRedirect: '/',
                 failureFlash: true,
-                wctx: wsfedConfig.redirectURI + '~~' + appCredentials.client_id + '~~' + appCredentials.client_key
+                wctx: wsfedConfig.redirectURI
             })(req, res, next);
         } else {
-            next(err);
+           return next(err);
         }
     });
 });
 
 router.post("/login", (req, res, next) => {
   const wctx = req.body.wctx;
-  const data =  wctx.split('~~');
   const requestBody = {};
-  const redirectUrl = data[0];
-  const clientId = data[1];
-  const clientKey = data[2];
+  const redirectUrl = wctx;
+  const appCredentials = getAppCredentials(req);
+  const clientId = appCredentials.client_id;
+  const clientKey = appCredentials.client_key;
   const basicAuthToken = new Buffer((clientId + ":" + clientKey)).toString('base64');
   passport.authenticate(getConfigStorageKey(clientId), (err, profile, info) => {
         var username = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'];
