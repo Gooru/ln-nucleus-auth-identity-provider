@@ -48,8 +48,6 @@ router.post("/login", (req, res, next) => {
         var role = profile['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
         requestBody.grant_type = "wsfed";
 	if(username != null) {
-            requestBody.user.username = username.replace(/[^a-z\d\s]+/gi, "");
-            requestBody.user.username = requestBody.user.username.substring(0,13);
             requestBody.user.reference_id = requestBody.user.username;
         }
         else if (profile.email != null) {
