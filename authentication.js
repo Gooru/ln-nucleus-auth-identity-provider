@@ -32,11 +32,12 @@ app.use(function(req, res, next) {
 
 app.use(function(err, req, res, next) {
     res.status(err.status || 500);
+	console.error(err); 
     logger.error("Error : ");
     logger.error(err);
     logger.error("request URL : " + req.url);
     if (err.status == 400 || err.status == 401 || err.status == 403) {
-        res.end(err.message);
+       res.end(err.message);
     } else {
         res.end("The application has encountered an unknown error.");
     }
