@@ -43,15 +43,11 @@ WSFEDConfiguration.prototype.getConfig = function(client_id, callback) {
 WSFEDConfiguration.prototype.getRedirectURL = function(domain, callback) {
    var params = [domain];
     try {
-        PGEntityDomainBasedRedirect.getRedirectURL(params, function(err, res) { 
-			console.log("reading redirect url");
-			console.log(res);
-			console.log(err);
-			if (res) {
-				console.log("reading url");
+        PGEntityDomainBasedRedirect.getRedirectURL(params, function(err, res) {
+            if (res) {
                 return callback(err, res.redirect_url);
             } else { 
-               return callback(err, null);
+                return callback(err, null);
             }
         });
     } catch(error) {
