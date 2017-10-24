@@ -16,17 +16,19 @@ router.get('/login', function(req, res, next) {
 	const client_id = req.query.client_id;
 	
 	if (typeof(domain) != 'undefined') {
-	   logger.info("searching for redirect Url for domain:" + domain);
+                logger.info("searching for redirect Url for domain:" + domain);
 		WSFEDConfiguration.getRedirectURL(domain, function(err, redirect_url) {
 		    if (!err) {
-				logger.debug("redirect url got successfully :" + redirect_url);
+                           logger.debug("redirect url got successfully :" + redirect_url);
+                           res.redirect(redirect_url);
+                           res.end();
 		    } else {
 			   logger.error("error in getting redirect url");
 		       return next(err);
 		    }
 		});
 	} else if(typeof(client_id) != 'undefined') { 
-        WSFEDConfiguration.getConfig(client_id, function(err, strategy, wsfedConfig) {
+                WSFEDConfiguration.getConfig(client_id, function(err, strategy, wsfedConfig) {
 		    if (!err) {
 		        passport.use(getConfigStorageKey(client_id), strategy);
 		        passport.authenticate(getConfigStorageKey(client_id), {
