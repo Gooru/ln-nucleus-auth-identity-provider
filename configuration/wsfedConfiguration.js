@@ -3,8 +3,10 @@ var WSFEDStrategy = require('passport-wsfed-saml2').Strategy;
 var PGEntitySSOConfig = require('../repositories/PGEntitySSOConfig');
 var PGEntitySSOConfig = new PGEntitySSOConfig();
 
-function WSFEDConfiguration() {
+var PGEntityDomainBasedRedirect = require('../repositories/PGEntityDomainBasedRedirect');
+var PGEntityDomainBasedRedirect = new PGEntityDomainBasedRedirect();
 
+function WSFEDConfiguration() {
 };
 
 WSFEDConfiguration.prototype.getConfig = function(client_id, callback) {
@@ -38,8 +40,19 @@ WSFEDConfiguration.prototype.getConfig = function(client_id, callback) {
     }
 };
 
+WSFEDConfiguration.prototype.getRedirectURL = function(domain, callback) {
+   var params = [domain];
+    try {
+        PGEntityDomainBasedRedirect.getRedirectURL(params, function(err, res) {
+            if (res) {
+                return callback(err, res.redirect_url);
+            } else { 
+                return callback(err, null);
+            }
+        });
+    } catch(error) {
+        return callback(error, null);
+    }
+};
 
 module.exports = WSFEDConfiguration;
-
-
-

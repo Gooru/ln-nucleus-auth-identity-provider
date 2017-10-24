@@ -7,29 +7,44 @@ var queryString = require('qs');
 var superagent = require('superagent');
 var WSFEDConfiguration = require('../../configuration/wsfedConfiguration');
 var WSFEDConfiguration = new WSFEDConfiguration();
-const configKeyPrefix = "WSFED-";
 
+const configKeyPrefix = "WSFED-";
 
 router.get('/login', function(req, res, next) {
     logger.info("Version 2 : Wsfed  signin entry point ...");
-    const client_id = req.query.client_id;
-    if (typeof(client_id) == 'undefined') { 
-         var err = new Error("Client id missing.");
-         err.status = 401;
-         return next(err);
-    }
-    WSFEDConfiguration.getConfig(client_id, function(err, strategy, wsfedConfig) {
-        if (!err) {
-            passport.use(getConfigStorageKey(client_id), strategy);
-            passport.authenticate(getConfigStorageKey(client_id), {
-                failureRedirect: '/',
-                failureFlash: true,
-                wctx: wsfedConfig.redirectURI
-            })(req, res, next);
-        } else {
-           return next(err);
-        }
-    });
+    const domain = req.hostname;
+	const client_id = req.query.client_id;
+	
+	if (typeof(domain) != 'undefined') {
+                logger.info("searching for redirect Url for domain:" + domain);
+		WSFEDConfiguration.getRedirectURL(domain, function(err, redirect_url) {
+		    if (!err) {
+                           logger.debug("redirect url got successfully :" + redirect_url);
+                           res.redirect(redirect_url);
+                           res.end();
+		    } else {
+			   logger.error("error in getting redirect url");
+		       return next(err);
+		    }
+		});
+	} else if(typeof(client_id) != 'undefined') { 
+                WSFEDConfiguration.getConfig(client_id, function(err, strategy, wsfedConfig) {
+		    if (!err) {
+		        passport.use(getConfigStorageKey(client_id), strategy);
+		        passport.authenticate(getConfigStorageKey(client_id), {
+		            failureRedirect: '/',
+		            failureFlash: true,
+		            wctx: wsfedConfig.redirectURI
+		        })(req, res, next);
+		    } else {
+		       return next(err);
+		    }
+    	});
+	} else {
+		var err = new Error("Unauthorized Access");
+        err.status = 401;
+        return next(err);
+	}
 });
 
 router.post("/login", (req, res, next) => {
