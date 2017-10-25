@@ -5,7 +5,6 @@ function PGEntitySSOConfig() {
     
 };
 
-//const SELECT_SSO_CONFIG = "select config from sso_config where id = $1::uuid AND sso_type= $2::varchar";
 const SELECT_SSO_CONFIG = "select config from sso_config where domain = $1::varchar AND sso_type= $2::varchar";
 const SELECT_SECRET = "select secret from sso_config where id = $1::uuid";
 

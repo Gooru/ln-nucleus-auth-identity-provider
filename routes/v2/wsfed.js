@@ -36,31 +36,30 @@ router.get('/login', function(req, res, next) {
 });
 
 router.post("/login", (req, res, next) => {
+  logger.debug("Processing POST Login request");
   const wctx = req.body.wctx;
-  const wresult = req.body.wresult;
-  logger.info(wresult);
   const requestBody = {};
   const redirectUrl = wctx;
   const domain = req.hostname; 
 
   passport.authenticate(getConfigStorageKey(domain), (err, profile, info) => {
-        logger.info("profile ==>" + profile);
 	var username = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'];
-        requestBody.user = {};
-        requestBody.user.first_name = profile['http://identityserver.thinktecture.com/claims/profileclaims/firstname'];
-        requestBody.user.last_name =  profile['http://identityserver.thinktecture.com/claims/profileclaims/lastname'];
-        var role = profile['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-        requestBody.grant_type = "wsfed";
+    requestBody.user = {};
+    requestBody.user.first_name = profile['http://identityserver.thinktecture.com/claims/profileclaims/firstname'];
+    requestBody.user.last_name =  profile['http://identityserver.thinktecture.com/claims/profileclaims/lastname'];
+
+    var role = profile['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+    requestBody.grant_type = "wsfed";
 
 	if(username != null) {
-            requestBody.user.reference_id = username;
-        }
-        else if (profile.email != null) {
-            requestBody.user.reference_id = profile.email;
-        }
-        if (profile.email != null) { 
-            requestBody.user.email = profile.email;
-        }
+        requestBody.user.reference_id = username;
+    }
+    else if (profile.email != null) {
+        requestBody.user.reference_id = profile.email;
+    }
+    if (profile.email != null) { 
+        requestBody.user.email = profile.email;
+    }
 
 	const clientId = profile['http://gooru.org/tenant/clientid'];
 	logger.info("client id received:" + clientId);
@@ -68,16 +67,12 @@ router.post("/login", (req, res, next) => {
 	  if (!err) {
 		logger.debug("got secret from database :" + secret);
 		const basicAuthToken = new Buffer((clientId + ":" + secret)).toString('base64');
-	        authenticate(req, res, redirectUrl, requestBody, basicAuthToken);
-
+        authenticate(req, res, redirectUrl, requestBody, basicAuthToken);
 	  } else {
 		logger.error("unable to get secret for the client:" + clientId);
 		return next(err);
 	  }
 	});
-
-//        const basicAuthToken = new Buffer((clientId + ":" + clientKey)).toString('base64');
-  //      authenticate(req, res, redirectUrl, requestBody, basicAuthToken);
   })(req, res, next)
 });
 
