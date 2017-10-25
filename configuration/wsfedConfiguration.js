@@ -9,13 +9,13 @@ var PGEntityDomainBasedRedirect = new PGEntityDomainBasedRedirect();
 function WSFEDConfiguration() {
 };
 
-WSFEDConfiguration.prototype.getConfig = function(client_id, callback) {
-   var params = [client_id, 'wsfed'];
+WSFEDConfiguration.prototype.getConfig = function(domain, callback) {
+   var params = [domain, 'wsfed'];
     try {
         PGEntitySSOConfig.getSSOConfig(params, function(err, res) { 
             if (!err) {
                 if (typeof(res.config) == 'undefined') {
-                    var err = new Error("Invalid client Id");
+                    var err = new Error("Invalid domain");
                     err.status = 401;
                     return callback(err, null);
                 }
@@ -46,6 +46,21 @@ WSFEDConfiguration.prototype.getRedirectURL = function(domain, callback) {
         PGEntityDomainBasedRedirect.getRedirectURL(params, function(err, res) {
             if (res) {
                 return callback(err, res.redirect_url);
+            } else { 
+                return callback(err, null);
+            }
+        });
+    } catch(error) {
+        return callback(error, null);
+    }
+};
+
+WSFEDConfiguration.prototype.getSecret = function(client_id, callback) {
+   var params = [client_id];
+    try {
+        PGEntitySSOConfig.getSecret(params, function(err, res) {
+            if (res) {
+                return callback(err, res.secret);
             } else { 
                 return callback(err, null);
             }

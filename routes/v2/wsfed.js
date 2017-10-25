@@ -13,25 +13,13 @@ const configKeyPrefix = "WSFED-";
 router.get('/login', function(req, res, next) {
     logger.info("Version 2 : Wsfed  signin entry point ...");
     const domain = req.hostname;
-	const client_id = req.query.client_id;
-	
-	if (typeof(domain) != 'undefined') {
-                logger.info("searching for redirect Url for domain:" + domain);
-		WSFEDConfiguration.getRedirectURL(domain, function(err, redirect_url) {
+    
+    if (typeof(domain) != 'undefined') {
+        logger.info("searching for redirect Url for domain:" + domain);
+		WSFEDConfiguration.getConfig(domain, function(err, strategy, wsfedConfig) {
 		    if (!err) {
-                           logger.debug("redirect url got successfully :" + redirect_url);
-                           res.redirect(redirect_url);
-                           res.end();
-		    } else {
-			   logger.error("error in getting redirect url");
-		       return next(err);
-		    }
-		});
-	} else if(typeof(client_id) != 'undefined') { 
-                WSFEDConfiguration.getConfig(client_id, function(err, strategy, wsfedConfig) {
-		    if (!err) {
-		        passport.use(getConfigStorageKey(client_id), strategy);
-		        passport.authenticate(getConfigStorageKey(client_id), {
+		        passport.use(getConfigStorageKey(domain), strategy);
+		        passport.authenticate(getConfigStorageKey(domain), {
 		            failureRedirect: '/',
 		            failureFlash: true,
 		            wctx: wsfedConfig.redirectURI
@@ -40,28 +28,30 @@ router.get('/login', function(req, res, next) {
 		       return next(err);
 		    }
     	});
-	} else {
-		var err = new Error("Unauthorized Access");
+     } else {
+	var err = new Error("Unauthorized Access");
         err.status = 401;
         return next(err);
-	}
+     }
 });
 
 router.post("/login", (req, res, next) => {
   const wctx = req.body.wctx;
+  const wresult = req.body.wresult;
+  logger.info(wresult);
   const requestBody = {};
   const redirectUrl = wctx;
-  const appCredentials = getAppCredentials(req);
-  const clientId = appCredentials.client_id;
-  const clientKey = appCredentials.client_key;
-  const basicAuthToken = new Buffer((clientId + ":" + clientKey)).toString('base64');
-  passport.authenticate(getConfigStorageKey(clientId), (err, profile, info) => {
-        var username = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'];
+  const domain = req.hostname; 
+
+  passport.authenticate(getConfigStorageKey(domain), (err, profile, info) => {
+        logger.info("profile ==>" + profile);
+	var username = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'];
         requestBody.user = {};
         requestBody.user.first_name = profile['http://identityserver.thinktecture.com/claims/profileclaims/firstname'];
         requestBody.user.last_name =  profile['http://identityserver.thinktecture.com/claims/profileclaims/lastname'];
         var role = profile['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
         requestBody.grant_type = "wsfed";
+
 	if(username != null) {
             requestBody.user.reference_id = username;
         }
@@ -71,7 +61,23 @@ router.post("/login", (req, res, next) => {
         if (profile.email != null) { 
             requestBody.user.email = profile.email;
         }
-        authenticate(req, res, redirectUrl, requestBody, basicAuthToken);
+
+	const clientId = profile['http://gooru.org/tenant/clientid'];
+	logger.info("client id received:" + clientId);
+	WSFEDConfiguration.getSecret(clientId, function(err, secret) {
+	  if (!err) {
+		logger.debug("got secret from database :" + secret);
+		const basicAuthToken = new Buffer((clientId + ":" + secret)).toString('base64');
+	        authenticate(req, res, redirectUrl, requestBody, basicAuthToken);
+
+	  } else {
+		logger.error("unable to get secret for the client:" + clientId);
+		return next(err);
+	  }
+	});
+
+//        const basicAuthToken = new Buffer((clientId + ":" + clientKey)).toString('base64');
+  //      authenticate(req, res, redirectUrl, requestBody, basicAuthToken);
   })(req, res, next)
 });
 
