@@ -36,7 +36,7 @@ router.get('/login', function(req, res, next) {
 });
 
 router.post("/login", (req, res, next) => {
-  logger.debug("Processing POST Login request");
+  logger.info("Processing POST Login request");
   const wctx = req.body.wctx;
   const requestBody = {};
   const redirectUrl = wctx;
@@ -65,7 +65,7 @@ router.post("/login", (req, res, next) => {
 	logger.info("client id received:" + clientId);
 	WSFEDConfiguration.getSecret(clientId, function(err, secret) {
 	  if (!err) {
-		logger.debug("got secret from database :" + secret);
+		logger.debug("got secret from database");
 		const basicAuthToken = new Buffer((clientId + ":" + secret)).toString('base64');
         authenticate(req, res, redirectUrl, requestBody, basicAuthToken);
 	  } else {
