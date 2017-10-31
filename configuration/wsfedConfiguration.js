@@ -1,23 +1,24 @@
 const config = require('../config');
 var WSFEDStrategy = require('passport-wsfed-saml2').Strategy;
-const Utils = require('../utils/HelperUtils');
 var PGEntitySSOConfig = require('../repositories/PGEntitySSOConfig');
 var PGEntitySSOConfig = new PGEntitySSOConfig();
 
-function WSFEDConfiguration() {
+var PGEntityDomainBasedRedirect = require('../repositories/PGEntityDomainBasedRedirect');
+var PGEntityDomainBasedRedirect = new PGEntityDomainBasedRedirect();
 
+function WSFEDConfiguration() {
 };
 
-WSFEDConfiguration.prototype.getConfig = function(appCredentials, callback) {
-   var params = [appCredentials.client_id, Utils.encryptClientKey(appCredentials.client_key), 'wsfed'];
+WSFEDConfiguration.prototype.getConfig = function(domain, callback) {
+   var params = [domain, 'wsfed'];
     try {
         PGEntitySSOConfig.getSSOConfig(params, function(err, res) { 
             if (!err) {
                 if (typeof(res.config) == 'undefined') {
-                    var err = new Error("Invalid client Id or Secret Key");
+                    var err = new Error("Invalid domain");
                     err.status = 401;
                     return callback(err, null);
-                } 
+                }
                 var strategy =  new WSFEDStrategy({
                                     realm: res.config.realm,
                                     homeRealm: res.config.homeRealm,
@@ -39,8 +40,34 @@ WSFEDConfiguration.prototype.getConfig = function(appCredentials, callback) {
     }
 };
 
+WSFEDConfiguration.prototype.getRedirectURL = function(domain, callback) {
+   var params = [domain];
+    try {
+        PGEntityDomainBasedRedirect.getRedirectURL(params, function(err, res) {
+            if (res) {
+                return callback(err, res.redirect_url);
+            } else { 
+                return callback(err, null);
+            }
+        });
+    } catch(error) {
+        return callback(error, null);
+    }
+};
+
+WSFEDConfiguration.prototype.getSecret = function(client_id, callback) {
+   var params = [client_id];
+    try {
+        PGEntitySSOConfig.getSecret(params, function(err, res) {
+            if (res) {
+                return callback(err, res.secret);
+            } else { 
+                return callback(err, null);
+            }
+        });
+    } catch(error) {
+        return callback(error, null);
+    }
+};
 
 module.exports = WSFEDConfiguration;
-
-
-
