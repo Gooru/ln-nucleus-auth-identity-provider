@@ -5,8 +5,8 @@ var config = require('../../config');
 var logger = require('../../log');
 var queryString = require('qs');
 var superagent = require('superagent');
-var WSFEDConfiguration = require('../../configuration/wsfedConfiguration');
-var WSFEDConfiguration = new WSFEDConfiguration();
+var WSFEDConfig = require('../../configuration/wsfedConfiguration');
+var WSFEDConfiguration = new WSFEDConfig();
 
 const configKeyPrefix = "WSFED-";
 
@@ -42,38 +42,46 @@ router.post("/login", (req, res, next) => {
   const redirectUrl = wctx;
   const domain = req.hostname; 
 
-  passport.authenticate(getConfigStorageKey(domain), (err, profile, info) => {
-	var username = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'];
-    requestBody.user = {};
-    requestBody.user.first_name = profile['http://identityserver.thinktecture.com/claims/profileclaims/firstname'];
-    requestBody.user.last_name =  profile['http://identityserver.thinktecture.com/claims/profileclaims/lastname'];
+  WSFEDConfiguration.getConfig(domain, function(err, strategy, wsfedConfig) {
+  	passport.use(getConfigStorageKey(domain), strategy);
 
-    var role = profile['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-    requestBody.grant_type = "wsfed";
+	passport.authenticate(getConfigStorageKey(domain), (err, profile, info) => {
+    		requestBody.user = {};
+    		requestBody.user.first_name = profile['http://identityserver.thinktecture.com/claims/profileclaims/firstname'];
+    		requestBody.user.last_name =  profile['http://identityserver.thinktecture.com/claims/profileclaims/lastname'];
 
-	if(username != null) {
-        requestBody.user.reference_id = username;
-    }
-    else if (profile.email != null) {
-        requestBody.user.reference_id = profile.email;
-    }
-    if (profile.email != null) { 
-        requestBody.user.email = profile.email;
-    }
+    		var role = profile['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+    		requestBody.grant_type = "wsfed";
 
-	const clientId = profile['http://gooru.org/tenant/clientid'];
-	logger.info("client id received:" + clientId);
-	WSFEDConfiguration.getSecret(clientId, function(err, secret) {
-	  if (!err) {
-		logger.debug("got secret from database");
-		const basicAuthToken = new Buffer((clientId + ":" + secret)).toString('base64');
-        authenticate(req, res, redirectUrl, requestBody, basicAuthToken);
-	  } else {
-		logger.error("unable to get secret for the client:" + clientId);
-		return next(err);
-	  }
-	});
-  })(req, res, next)
+		var account_id = profile['http://identityserver.thinktecture.com/claims/profileclaims/accountguid'];
+		if (account_id != null) {
+			requestBody.user.reference_id = account_id;
+    		}
+
+		var username = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'];
+		if(username != null) {
+        		requestBody.user.username = username;
+    		}
+
+    		var email = profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'];
+    		if (email != null) {
+        		requestBody.user.email = email;
+    		}
+
+		const clientId = profile['http://gooru.org/tenant/clientid'];
+		logger.info("client id received:" + clientId);
+		WSFEDConfiguration.getSecret(clientId, function(err, secret) {
+	  		if (!err) {
+				logger.debug("got secret from database");
+				const basicAuthToken = new Buffer((clientId + ":" + secret)).toString('base64');
+        			authenticate(req, res, redirectUrl, requestBody, basicAuthToken);
+	  		} else {
+				logger.error("unable to get secret for the client:" + clientId);
+				return next(err);
+	  		}
+		});
+  	})(req, res, next)
+  });
 });
 
 
