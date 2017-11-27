@@ -24,18 +24,24 @@ function authenticate(req, res, options) {
                 if (req.query.state != null) {
                     redirectUrl = req.query.state;
                 } else if (typeof(wreply) !== "undefined" && wreply.length > 0) {
-					redirectUrl= wreply;
+		    redirectUrl= wreply;
                 } else {
-					redirectUrl = domainName;
-				}
-                redirectUrl += "?access_token=" + json.access_token;
+		    redirectUrl = domainName;
+		}
+
+		if (redirectUrl.indexOf("?") >= 0) {
+                    redirectUrl += "&access_token=" + json.access_token;
+                } else {
+                    redirectUrl += "?access_token=" + json.access_token;
+                }
+
                 res.setHeader('Location', redirectUrl);
-			}  else {
-				logger.error(" Authentication failure :");
-				logger.error(response.text);
-				res.statusCode = 302;
-				res.setHeader('Location', domainName);
-			}
+	    }  else {
+		logger.error(" Authentication failure :");
+		logger.error(response.text);
+		res.statusCode = 302;
+		res.setHeader('Location', domainName);
+	    }
             res.end();
      });
 
