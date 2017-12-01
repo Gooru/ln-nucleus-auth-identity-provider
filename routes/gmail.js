@@ -26,7 +26,7 @@ passport.use(new GoogleStrategy({
     }));
 router.get("/", function(request, response) {
    logger.info("Google signin entry point ...");
-   var callbackUrl = typeof(request.query.callBackUrl) ? request.query.callBackUrl : request.query.redirectURL;
+   var callbackUrl = typeof(request.query.callBackUrl) != 'undefined' ? request.query.callBackUrl : request.query.redirectURL;
    if (typeof(callbackUrl) == 'undefined' || callbackUrl.length == 0) {
       callbackUrl  = request.protocol  + ':' + config.gmail.redirectUrl;
    }
@@ -57,8 +57,5 @@ router.get('/callback',
         new authenticate(req, res, options);
 
     });
-
-
-
 
 module.exports = router;
