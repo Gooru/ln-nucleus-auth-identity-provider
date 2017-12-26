@@ -6,6 +6,7 @@ var wsfed = require('./routes/wsfed');
 var saml = require('./routes/saml');
 var shibboleth = require('./routes/shibboleth');
 var wsfedv2 = require('./routes/v2/wsfed');
+var wsfedv3 = require('./routes/v3/wsfed');
 
 var logger = require('./log');
 var app = express();
@@ -22,6 +23,7 @@ app.use('/api/nucleus-auth-idp/v1/wsfed', wsfed);
 app.use('/api/nucleus-auth-idp/v1/saml', saml);
 app.use('/api/nucleus-auth-idp/v1/shibboleth', shibboleth);
 app.use('/api/nucleus-auth-idp/v2/wsfed', wsfedv2);
+app.use('/api/nucleus-auth-idp/v3/wsfed', wsfedv3);
 
 
 app.use(function(req, res, next) {

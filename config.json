@@ -25,7 +25,13 @@
    },
    "client_id":"ba956a97-ae15-11e5-a302-f8a963065976",
    "client_key":"c2hlZWJhbkBnb29ydWxlYXJuaW5nLm9yZw==",
-   "baseUrl":"http://nucleus-qa.gooru.org",
-   "hostname":"http://nucleus-qa.gooru.org",
-   "domainName":"nucleus-qa.gooru.org"
+   "baseUrl":"http://nile-qa.gooru.org",
+   "hostname":"http://nile-qa.gooru.org",
+   "domainName":"nile-qa.gooru.org",
+   "authHandlerInternalHostName" : "http://localhost:8081",
+   "redis" : {
+   		"host": "127.0.0.1",
+    	"port": 6379,
+    	"expiryInMinutes" : 5
+   }
 }
