@@ -1,9 +1,17 @@
 var winston = require('winston');
-var logger = new(winston.Logger)({
+require('winston-daily-rotate-file');
+
+var transport = new (winston.transports.DailyRotateFile)({
+    filename: './log',
+    datePattern: 'nucleus-yyyy-MM-dd.',
+    prepend: true,
+    level: 'info'
+  });
+
+  var logger = new (winston.Logger)({
     transports: [
-        new(winston.transports.File)({
-            filename: 'access.log'
-        })
+      transport
     ]
-});
+  });
+  
 module.exports = logger;

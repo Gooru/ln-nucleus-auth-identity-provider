@@ -18,11 +18,12 @@
       "passport-wsfed-saml2":"2.7.0",
       "passport-saml":"0.6.0",
       "superagent":"0.21.0",
-      "winston":"0.8.3",
+      "winston":"2.4.0",
       "pg": "6.4.0",
       "qs": "6.5.0",
       "redis" : "2.8.0",
       "uuid-v4" : "0.1.0",
-      "collections" : "5.1.1"
+      "collections" : "5.1.1",
+      "winston-daily-rotate-file" : "1.7.2"
    }
 }
