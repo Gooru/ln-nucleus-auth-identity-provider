@@ -91,13 +91,13 @@ router.post("/login/:shortname", (req, res, next) => {
 			// nonce while initiating the request. If not present then load default gooru home page.
 			if (typeof (nonce) === "undefined" || nonce.length == 0) {
 				LOGGER.debug("nonce is not present in context");
-				processAuthentication(req, res, null, requestBody, clientId);
+				processAuthentication(req, res, wsfedConfig.homeRealm, requestBody, clientId);
 			} else {
 				client.get(nonce, function(err, reply) {
 					if (!err) {
 						processAuthentication(req, res, reply, requestBody, clientId);
 					} else {
-						processAuthentication(req, res, null, requestBody, clientId);
+						processAuthentication(req, res, wsfedConfig.homeRealm, requestBody, clientId);
 					}
 				});
 			}

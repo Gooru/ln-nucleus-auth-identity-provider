@@ -74,7 +74,8 @@ router.post("/login", (req, res, next) => {
 	  		if (!err) {
 				logger.debug("got secret from database");
 				const basicAuthToken = new Buffer((clientId + ":" + secret)).toString('base64');
-        			authenticate(req, res, redirectUrl, requestBody, basicAuthToken);
+				redirectUrl = (typeof(redirectUrl) === "undefined" || redirectUrl.length <= 0) ? wsfedConfig.homeRealm : redirectUrl;
+        		authenticate(req, res, redirectUrl, requestBody, basicAuthToken);
 	  		} else {
 				logger.error("unable to get secret for the client:" + clientId);
 				return next(err);
