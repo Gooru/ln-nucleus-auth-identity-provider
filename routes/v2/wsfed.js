@@ -115,7 +115,8 @@ function getAppCredentials(request) {
        reqparams.client_id = request.query.client_id;
        reqparams.client_key = request.query.client_key;
    } else {
-        // setting default value of Gooru Client key and Id, If client id and key does not exist in request parameter
+        // setting default value of Gooru Client key and Id, If client id and
+		// key does not exist in request parameter
         reqparams.client_key = config.client_key;
         reqparams.client_id =  config.client_id;
    }
