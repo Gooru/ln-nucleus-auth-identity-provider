@@ -5,7 +5,6 @@ var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 var superagent = require('superagent');
 var config = require('../../config');
 var logger = require('../../log');
-//var authenticate = require('./authenticate');
 var GmailConfig = require('../../configuration/gmailConfiguration');
 var GmailConfiguration = new GmailConfig();
 
@@ -95,9 +94,10 @@ function(req, res) {
 						logger.info("email domain verified successfully");
 						authenticate(req, res, options);
 					} else {
-						var err = new Error("Unauthorized domain");
-						err.status = 403;
-						return next(err);
+						logger.info("Unauthorized domain");
+						res.statusCode = 403;
+						res.message = "access from unauthorized domain";
+						res.end();
 					}
 				} else {
 					logger.info("null domains");
@@ -107,7 +107,9 @@ function(req, res) {
 			} else {
 				logger.error("unable to get config of the tenant: "
 						+ options.client_id);
-				return next(err);
+				res.statusCode = 401;
+				res.message = "access from unauthorized tenant";
+				res.end();
 			}
 		});
 	} else {
@@ -125,13 +127,10 @@ function isVerifiedDomain(email, requiredDomains) {
 }
 
 function authenticate(req, res, options) {
-	//var defaultOptions = {
-	//	client_id : options.client_id,
-	//	client_key : options.client_key
-	//};
-	//defaultOptions = extend(options, defaultOptions);
-	//var url = queryString.parse(req.headers.referer);
-	//var wreply = url['wreply'];
+
+	var callBackUrl = options.callBackUrl;
+    delete options.callBackUrl;
+    
 	superagent
 			.post(config.hostname + '/api/nucleus-auth/v1/authorize')
 			.send(options)
@@ -147,16 +146,8 @@ function authenticate(req, res, options) {
 							res.statusCode = 302;
 							var redirectUrl = null;
 
-							//if (req.query.state != null) {
-							//	redirectUrl = req.query.state;
-							//} else if (typeof (wreply) !== "undefined"
-							//		&& wreply.length > 0) {
-							//	redirectUrl = wreply;
-							//} else {
-							//	redirectUrl = domainName;
-							//}
-							if (typeof (options.callBackUrl) !== 'undefined') {
-								redirectUrl = options.callBackUrl
+							if (typeof (callBackUrl) !== 'undefined') {
+								redirectUrl = callBackUrl
 							} else {
 								redirectUrl = domainName;
 							}		
