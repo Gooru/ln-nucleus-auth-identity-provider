@@ -13,22 +13,11 @@ passport.deserializeUser(function(obj, done) {
 	done(null, obj);
 });
 
-passport.use(new GoogleStrategy({
-	clientID : config.gmail.clientID,
-	clientSecret : config.gmail.clientSecret,
-	callbackURL : config.baseUrl + '/api/nucleus-auth-idp/v1/google/callback'
-},
-
-function(request, accessToken, refreshToken, profile, done) {
-	process.nextTick(function() {
-		return done(null, profile);
-	})
-}));
 router
 		.get(
 				"/",
 				function(request, response) {
-					logger.info("Google signin entry point ...");
+					logger.info("v1 Google signin entry point ...");
 					var callbackUrl = typeof (request.query.callBackUrl) != 'undefined' ? request.query.callBackUrl
 							: request.query.redirectURL;
 					if (typeof (callbackUrl) == 'undefined'
@@ -36,6 +25,18 @@ router
 						callbackUrl = request.protocol + ':'
 								+ config.gmail.redirectUrl;
 					}
+
+					passport.use(new GoogleStrategy({
+						clientID : config.gmail.clientID,
+						clientSecret : config.gmail.clientSecret,
+						callbackURL : config.baseUrl
+								+ '/api/nucleus-auth-idp/v1/google/callback'
+					}, function(request, accessToken, refreshToken, profile,
+							done) {
+						process.nextTick(function() {
+							return done(null, profile);
+						})
+					}));
 
 					passport.authenticate(
 							'google',
@@ -58,7 +59,7 @@ function(req, res) {
 	options.user.last_name = profile._json.family_name;
 	options.user.identity_id = profile._json.email;
 	options.grant_type = "google";
-	logger.info("Callback from google ..." + profile._json.email);
+	logger.info("Callback from v1 google ..." + profile._json.email);
 	new authenticate(req, res, options);
 
 });
