@@ -17,10 +17,10 @@ passport.deserializeUser(function(obj, done) {
 });
 
 var gmailGetRouteHandler = function(request, response, next) {
-	logger.info("Google signin entry point ...");
+	logger.info("v2 Google signin entry point ...");
 
 	var tenantId = request.query.tenantId;
-	logger.info("Google signin for tenantId:" + tenantId);
+	logger.info("tenantId found in request:" + tenantId);
 
 	// If there is no tenant id in the request then fallback on default from
 	// config
@@ -72,7 +72,7 @@ function(req, res) {
 	options.user.last_name = profile._json.family_name;
 	options.user.identity_id = profile._json.email;
 	options.grant_type = "google";
-	logger.info("Callback from google ..." + profile._json.email);
+	logger.info("Callback from v2 google ..." + profile._json.email);
 
 	var stateJson = JSON.parse(req.query.state);
 	options.callBackUrl = stateJson.redirectUrl;
