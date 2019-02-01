@@ -87,8 +87,10 @@ router.post("/login/:shortname", (req, res, next) => {
 			var nonce = getNonce(wctxMap);
 			LOGGER.info("nonce extracted from wctx:" + nonce);
 
-			// If nonce is present in wctx then use it as redirect url. Assuming that redirect url is stored in 
-			// nonce while initiating the request. If not present then load default gooru home page.
+			// If nonce is present in wctx then use it as redirect url. Assuming
+			// that redirect url is stored in
+			// nonce while initiating the request. If not present then load
+			// default gooru home page.
 			if (typeof (nonce) === "undefined" || nonce.length == 0) {
 				LOGGER.debug("nonce is not present in context");
 				processAuthentication(req, res, wsfedConfig.homeRealm, requestBody, clientId);
