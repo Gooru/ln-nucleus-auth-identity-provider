@@ -62,3 +62,6 @@ Identity provider authentication
 
        1) Navigate to github  [developer settings](https://github.com/settings/developers).
        2) Create new OAuth application, update the necessary values and save, See the sample value updates below, Once you save you will get client id and secret.
+       
+       ![alt text](https://github.com/Gooru/nucleus-auth-identity-provider/blob/develop/Oauth-github-sample-setup.png)
+       
