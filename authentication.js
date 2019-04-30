@@ -1,17 +1,17 @@
-let express = require('express');
-let bodyParser = require('body-parser');
-let passport = require('passport');
-let gmail = require('./routes/gmail');
-let gmailv2 = require('./routes/v2/gmail');
-let wsfed = require('./routes/wsfed');
-let saml = require('./routes/saml');
-let shibboleth = require('./routes/shibboleth');
-let wsfedv2 = require('./routes/v2/wsfed');
-let wsfedv3 = require('./routes/v3/wsfed');
-let oauth2 = require('./routes/v1/oauth2');
+var express = require('express');
+var bodyParser = require('body-parser');
+var passport = require('passport');
+var gmail = require('./routes/gmail');
+var gmailv2 = require('./routes/v2/gmail');
+var wsfed = require('./routes/wsfed');
+var saml = require('./routes/saml');
+var shibboleth = require('./routes/shibboleth');
+var wsfedv2 = require('./routes/v2/wsfed');
+var wsfedv3 = require('./routes/v3/wsfed');
+var oauth2 = require('./routes/v1/oauth2');
 
-let logger = require('./log');
-let app = express();
+var logger = require('./log');
+var app = express();
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
