@@ -1,4 +1,4 @@
-let OAuth2Strategy = require('passport-oauth2').Strategy;
+var OAuth2Strategy = require('passport-oauth2').Strategy;
 const PGEntitySSOConf = require('../../repositories/PGEntitySSOConfig');
 const PGEntitySSOConfig = new PGEntitySSOConf();
 

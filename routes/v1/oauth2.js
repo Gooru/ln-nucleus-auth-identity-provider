@@ -1,13 +1,13 @@
-let express = require('express');
-let router = express.Router();
-let passport = require('passport');
-let config = require('../../config');
-let LOGGER = require('../../log');
-let queryString = require('qs');
-let superagent = require('superagent');
-let flatten = require('flat');
-let OAUTH2Config = require('./oauth2Configuration');
-let OAUTH2Configuration = new OAUTH2Config();
+var express = require('express');
+var router = express.Router();
+var passport = require('passport');
+var config = require('../../config');
+var LOGGER = require('../../log');
+var queryString = require('qs');
+var superagent = require('superagent');
+var flatten = require('flat');
+var OAUTH2Config = require('./oauth2Configuration');
+var OAUTH2Configuration = new OAUTH2Config();
 const configKeyPrefix = "OAUTH2-";
 const MANDATORY_CONFIG_KEYS = ["authorization_url", "client_id", "token_url", "client_secret", "scope", "callback_url", "response_type", "profile.api_url", "profile.auth_header_placeholder", "profile.response_mapper.first_name"];
 
