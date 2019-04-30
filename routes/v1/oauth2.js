@@ -26,7 +26,7 @@ router.get('/:shortname', function(req, res, next) {
             failureFlash: true
           })(req, res, next);
         } else {
-          let err = new Error("Internal server error");
+          var err = new Error("Internal server error");
           err.status = 500;
           return next(err);
           LOGGER.info("Oauth2 config setting is not updated correctly, check  the mandatory key values.");
@@ -36,7 +36,7 @@ router.get('/:shortname', function(req, res, next) {
       }
     });
   } else {
-    let err = new Error("Unauthorized Access");
+    var err = new Error("Unauthorized Access");
     err.status = 401;
     return next(err);
   }
@@ -52,23 +52,23 @@ router.get("/:shortname/callback", (req, res, next) => {
     passport.use(getConfigStorageKey(shortname), strategy);
 
     passport.authenticate(getConfigStorageKey(shortname), (err, accessToken, profile) => {
-      let profileUrl = oauth2Config.profile.api_url;
-      let authHeaderPlaceholder = oauth2Config.profile.auth_header_placeholder;
-      let profileResponseMapper = oauth2Config.profile.response_mapper;
-      let redirectUrl = oauth2Config.home_page_url;
+      var profileUrl = oauth2Config.profile.api_url;
+      var authHeaderPlaceholder = oauth2Config.profile.auth_header_placeholder;
+      var profileResponseMapper = oauth2Config.profile.response_mapper;
+      var redirectUrl = oauth2Config.home_page_url;
 
       profileInfo(req, res, profileUrl, authHeaderPlaceholder, accessToken, function(err, response) {
         if (!err) {
-          let responseBody = flatten(response.body);
-          let profile = profileInfoMapper(profileResponseMapper, responseBody);
-          let requestBody = {
+          var responseBody = flatten(response.body);
+          var profile = profileInfoMapper(profileResponseMapper, responseBody);
+          var requestBody = {
             "grant_type": "oauth2",
             "user": profile
           };
           const basicAuthToken = new Buffer((clientId + ":" + secret)).toString('base64');
           authenticate(req, res, redirectUrl, requestBody, basicAuthToken);
         } else {
-          let err = new Error("Unauthorized Access");
+          var err = new Error("Unauthorized Access");
           err.status = 401;
           return next(err);
         }
@@ -85,10 +85,10 @@ function authenticate(req, res, redirectUrl, requestBody, basicAuthToken) {
     .set('user-agent', req.headers['user-agent'])
     .set('authorization', 'Basic ' + basicAuthToken)
     .end(function(e, response) {
-      let xForward = typeof(req.headers['x-forwarded-proto']) !== "undefined" ? req.headers['x-forwarded-proto'] : req.protocol;
-      let domainName = xForward + '://' + config.domainName;
+      var xForward = typeof(req.headers['x-forwarded-proto']) !== "undefined" ? req.headers['x-forwarded-proto'] : req.protocol;
+      var domainName = xForward + '://' + config.domainName;
       if (!e && (response.status == 200 || response.status == 201)) {
-        let json = JSON.parse(response.text);
+        var json = JSON.parse(response.text);
 
         if (redirectUrl == null || redirectUrl.length <= 0) {
           redirectUrl = domainName;
@@ -120,7 +120,7 @@ function getConfigStorageKey(id) {
 
 
 function profileInfo(req, res, profileUrl, authHeaderPlaceholder, accessToken, next) {
-  let authorizationHeader = authHeaderPlaceholder.replace('[tokenValue]', accessToken);
+  var authorizationHeader = authHeaderPlaceholder.replace('[tokenValue]', accessToken);
   LOGGER.debug("profile info:" + profileUrl);
   superagent.get(profileUrl)
     .set('user-agent', req.headers['user-agent'])
@@ -135,11 +135,11 @@ function profileInfo(req, res, profileUrl, authHeaderPlaceholder, accessToken, n
 }
 
 function profileInfoMapper(profileResponseMapper, profileInfo) {
-  let profile = {};
-  for (let key in profileResponseMapper) {
+  var profile = {};
+  for (var key in profileResponseMapper) {
     if (profileResponseMapper.hasOwnProperty(key)) {
-      let value = profileResponseMapper[key];
-      let profileData = profileInfo[value];
+      var value = profileResponseMapper[key];
+      var profileData = profileInfo[value];
       if (profileData) {
         profile[key] = profileData.toString();
       }
@@ -149,10 +149,10 @@ function profileInfoMapper(profileResponseMapper, profileInfo) {
 }
 
 function validateOAuth2ConfigSettings(OAUTH2Config) {
-  let oauth2Config = flatten(OAUTH2Config);
-  let oauth2ConfigKeys = Object.keys(oauth2Config);
-  for (let index = 0; index < MANDATORY_CONFIG_KEYS.length; index++) {
-    let value = MANDATORY_CONFIG_KEYS[index];
+  var oauth2Config = flatten(OAUTH2Config);
+  var oauth2ConfigKeys = Object.keys(oauth2Config);
+  for (var index = 0; index < MANDATORY_CONFIG_KEYS.length; index++) {
+    var value = MANDATORY_CONFIG_KEYS[index];
     if (!oauth2ConfigKeys.includes(value)) {
       return false;
     }
