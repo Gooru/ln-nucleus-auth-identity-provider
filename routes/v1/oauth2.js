@@ -87,19 +87,16 @@ function authenticate(req, res, redirectUrl, requestBody, basicAuthToken) {
     .end(function(e, response) {
       var xForward = typeof(req.headers['x-forwarded-proto']) !== "undefined" ? req.headers['x-forwarded-proto'] : req.protocol;
       var domainName = xForward + '://' + config.domainName;
+      if (redirectUrl == null || redirectUrl.length <= 0) {
+        redirectUrl = domainName;
+      }
       if (!e && (response.status == 200 || response.status == 201)) {
         var json = JSON.parse(response.text);
-
-        if (redirectUrl == null || redirectUrl.length <= 0) {
-          redirectUrl = domainName;
-        }
-
         if (redirectUrl.indexOf("?") >= 0) {
           redirectUrl += "&access_token=" + json.access_token;
         } else {
           redirectUrl += "?access_token=" + json.access_token;
         }
-
         res.statusCode = 302;
         res.setHeader('Location', redirectUrl);
       } else {
@@ -129,6 +126,8 @@ function profileInfo(req, res, profileUrl, authHeaderPlaceholder, accessToken, n
       if (!e) {
         return next(null, response);
       } else {
+        LOGGER.error(e);
+        LOGGER.error("Failed to read profile info:");
         return next(e, null);
       }
     });
