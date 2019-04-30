@@ -26,10 +26,10 @@ router.get('/:shortname', function(req, res, next) {
             failureFlash: true
           })(req, res, next);
         } else {
+          LOGGER.info("Oauth2 config setting is not updated correctly, check  the mandatory key values.");
           var err = new Error("Internal server error");
           err.status = 500;
           return next(err);
-          LOGGER.info("Oauth2 config setting is not updated correctly, check  the mandatory key values.");
         }
       } else {
         return next(err);
@@ -153,7 +153,7 @@ function validateOAuth2ConfigSettings(OAUTH2Config) {
   var oauth2ConfigKeys = Object.keys(oauth2Config);
   for (var index = 0; index < MANDATORY_CONFIG_KEYS.length; index++) {
     var value = MANDATORY_CONFIG_KEYS[index];
-    if (!oauth2ConfigKeys.includes(value)) {
+    if (oauth2ConfigKeys.indexOf(value) === -1) {
       return false;
     }
   }
