@@ -126,6 +126,8 @@ function profileInfo(req, res, profileUrl, authHeaderPlaceholder, accessToken, n
       if (!e) {
         return next(null, response);
       } else {
+        LOGGER.error(e);
+        LOGGER.error("Failed to read profile info:");
         return next(e, null);
       }
     });
