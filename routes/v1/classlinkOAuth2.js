@@ -3,6 +3,7 @@ var router = express.Router();
 var passport = require('passport');
 var config = require('../../config');
 var LOGGER = require('../../log');
+var ErrLogger = require('../../ErrorLog');
 var queryString = require('qs');
 var superagent = require('superagent');
 var flatten = require('flat');
@@ -87,6 +88,7 @@ function processAuthentication(req, res, redirectUrl, requestBody, district) {
 				const basicAuthToken = new Buffer((tenantInfo.tenant + ":" + tenantInfo.secret)).toString('base64');
    				authenticate(req, res, redirectUrl, requestBody, basicAuthToken);
 			} else {
+				ErrLogger.error("District (tenant of classlink) with id '" + district + "' not found in Gooru")
 				var err = new Error("District mapping not found in Gooru, Unauthorized Access");
             	err.status = 401;
             	return next(err);
