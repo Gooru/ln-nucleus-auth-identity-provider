@@ -8,7 +8,7 @@ var saml = require('./routes/saml');
 var shibboleth = require('./routes/shibboleth');
 var wsfedv2 = require('./routes/v2/wsfed');
 var wsfedv3 = require('./routes/v3/wsfed');
-//var oauth2 = require('./routes/v1/oauth2');
+var oauth2 = require('./routes/v1/oauth2');
 var classlink = require('./routes/v1/classlinkOAuth2');
 
 var logger = require('./log');
@@ -28,7 +28,7 @@ app.use('/api/nucleus-auth-idp/v1/saml', saml);
 app.use('/api/nucleus-auth-idp/v1/shibboleth', shibboleth);
 app.use('/api/nucleus-auth-idp/v2/wsfed', wsfedv2);
 app.use('/api/nucleus-auth-idp/v3/wsfed', wsfedv3);
-//app.use('/api/nucleus-auth-idp/v1/oauth2', oauth2);
+app.use('/api/nucleus-auth-idp/v1/oauth2', oauth2);
 app.use('/api/nucleus-auth-idp/v1/oauth2/classlink', classlink);
 
 app.use(function(req, res, next) {
