@@ -2,6 +2,9 @@ var OAuth2Strategy = require('passport-oauth2').Strategy;
 const PGEntitySSOConf = require('../../repositories/PGEntitySSOConfig');
 const PGEntitySSOConfig = new PGEntitySSOConf();
 
+const PGEntityTenantDistrictMapping = require('../../repositories/PGEntityTenantDistrictMapping');
+const PGEntityMapping = new PGEntityTenantDistrictMapping();
+
 function OAUTH2Configuration() {};
 
 OAUTH2Configuration.prototype.getConfig = function(shortname, callback) {
@@ -27,7 +30,7 @@ OAUTH2Configuration.prototype.getConfig = function(shortname, callback) {
             return done(null, accessToken, profile);
           })
         });
-        return callback(err, strategy, res.config, res.id, res.secret);
+        return callback(err, strategy, res.config);
       } else {
         return callback(err, null, null);
       }
@@ -35,6 +38,21 @@ OAUTH2Configuration.prototype.getConfig = function(shortname, callback) {
   } catch (error) {
     return callback(error, null, null);
   }
+};
+
+OAUTH2Configuration.prototype.getTenantMapping = function(districtId, callback) {
+	const params = [districtId];
+	try {
+		PGEntityMapping.getTenantMapping(params, function(err, res) {
+			if (!err) {
+				return callback(err, res);
+			} else {	
+				return callback(err, null);
+			}
+		});
+	} catch (error) {
+    	return callback(error, null);
+  	}
 };
 
 
