@@ -26,7 +26,7 @@ router
 								+ config.gmail.redirectUrl;
 					}
 
-					passport.use(new GoogleStrategy({
+					passport.use('open-gooru-google-connect', new GoogleStrategy({
 						clientID : config.gmail.clientID,
 						clientSecret : config.gmail.clientSecret,
 						callbackURL : config.baseUrl
@@ -39,7 +39,7 @@ router
 					}));
 
 					passport.authenticate(
-							'google',
+							'open-gooru-google-connect',
 							{
 								scope : [ config.gmail.scopeProfile,
 										config.gmail.scopeEmail ],
@@ -47,7 +47,7 @@ router
 							})(request, response)
 				});
 
-router.get('/callback', passport.authenticate('google', {
+router.get('/callback', passport.authenticate('open-gooru-google-connect', {
 	failureRedirect : '/'
 }),
 
