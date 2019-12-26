@@ -1,12 +1,16 @@
 var express = require('express');
 var router = express.Router();
-var passport = require('passport')
-var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+var passport = require('passport');
 var superagent = require('superagent');
 var config = require('../../config');
 var logger = require('../../log');
 var GmailConfig = require('../../configuration/gmailConfiguration');
 var GmailConfiguration = new GmailConfig();
+var uuid = require('uuid-v4');
+var redis = require('redis'),
+	client = redis.createClient(config.redis.port, config.redis.host);
+
+const configKeyPrefix = "Google-";
 
 passport.serializeUser(function(user, done) {
 	done(null, user);
@@ -29,27 +33,19 @@ var gmailGetRouteHandler = function(request, response, next) {
 	}
 
 	logger.info("getting gmail config from database for tenant:" + tenantId);
-	GmailConfiguration.getConfig(tenantId, function(err, gmailConfig) {
+	GmailConfiguration.getConfig(tenantId, function(err, strategy, gmailConfig) {
 		if (!err) {
 			logger.debug("got config from database");
-			passport.use(new GoogleStrategy({
-				clientID : gmailConfig.config.clientId,
-				clientSecret : gmailConfig.config.clientSecret,
-				callbackURL : gmailConfig.config.callBackUrl
-			}, function(request, accessToken, refreshToken, profile, done) {
-				process.nextTick(function() {
-					return done(null, profile);
-				})
-			}));
-
-			stateJson = {
+			passport.use(getConfigStorageKey(tenantId), strategy);
+			var stateJson = {
 				tenantId : tenantId,
-				redirectUrl : gmailConfig.config.redirectUrl
+				redirectUrl : gmailConfig.config.redirectUrl || config.gmail.redirectUrl
 			};
+			var stateNonce = generateNonce(JSON.stringify(stateJson));
 
-			passport.authenticate('google', {
+			passport.authenticate(getConfigStorageKey(tenantId), {
 				scope : [ config.gmail.scopeProfile, config.gmail.scopeEmail ],
-				state : JSON.stringify(stateJson)
+				state : stateNonce
 			})(request, response)
 		} else {
 			logger.error("unable to get config of the tenant: " + tenantId);
@@ -58,67 +54,78 @@ var gmailGetRouteHandler = function(request, response, next) {
 	});
 };
 
+var gmailGetCallbackHandler = function(req, res, next)  {
+	logger.info("Processing Google Callback Login request");
+	var stateNonce = req.query.state;
+	client.get(stateNonce, function(err, stateData) {
+		if (!err) {
+			if (!stateData) {
+				logger.error("unable to get config of the tenant: ");
+				logger.error(err);
+				var err = new Error("Unauthorized Access");
+				err.status = 401;
+				return next(err);
+			} else {
+				var stateJson = JSON.parse(stateData);
+				var options = {};
+				options.client_id = stateJson.tenantId;
+				logger.info("Checking tenant:" + stateJson.tenantId);
+				GmailConfiguration.getConfig(options.client_id, function(err, strategy, gmailConfig) {
+					if (!err) {
+						logger.info("got config from database");
+						passport.use(getConfigStorageKey(options.client_id), strategy);
+						passport.authenticate(getConfigStorageKey(options.client_id), (err, profile, info) => {
+							if(!err) {
+								options.user = {};
+								options.user.first_name = profile._json.given_name;
+								options.user.last_name = profile._json.family_name;
+								options.user.identity_id = profile._json.email;
+								options.grant_type = "google";
+								logger.info("Callback from v2 google ..." + profile._json.email);
+								options.client_key = gmailConfig.secret;
+								var requiredDomains = gmailConfig.config.domains;
+								logger.info("veryfying email domains:" + requiredDomains);
+								options.callBackUrl = stateJson.redirectUrl;
+								if (requiredDomains) {
+									logger.info("not null domains");
+									if (isVerifiedDomain(options.user.identity_id,
+											requiredDomains)) {
+										logger.info("email domain verified successfully");
+										authenticate(req, res, options);
+									} else {
+										logger.info("Unauthorized domain");
+										var err = new Error("Access from unauthorized domain");
+										err.status = 403;
+										return next(err);
+									}
+								} else {
+									logger.info("null domains");
+									authenticate(req, res, options);
+								}
+							} else {
+								logger.error("unable to get google strategy method:" + options.client_id);
+								return next(err);
+							}
+						})(req, res, next);
+					} else {
+						logger.error("unable to get config of the tenant: "
+								+ options.client_id);
+						var err = new Error("Unauthorized Access");
+						err.status = 401;
+					  return next(err);
+					}
+				});
+			}
+		} else {
+				logger.error("failed to fetch state nonce from redis");
+				return next(err);
+		 }
+	});
+};
+
 router.get("/", gmailGetRouteHandler);
 
-router.get('/callback', passport.authenticate('google', {
-	failureRedirect : '/'
-}),
-
-function(req, res) {
-	var profile = req.user;
-	var options = {};
-	options.user = {};
-	options.user.first_name = profile._json.given_name;
-	options.user.last_name = profile._json.family_name;
-	options.user.identity_id = profile._json.email;
-	options.grant_type = "google";
-	logger.info("Callback from v2 google ..." + profile._json.email);
-
-	var stateJson = JSON.parse(req.query.state);
-	options.callBackUrl = stateJson.redirectUrl;
-	logger.info("Checking tenant:" + stateJson.tenantId);
-
-	if (stateJson.tenantId) {
-		options.client_id = stateJson.tenantId;
-		GmailConfiguration.getConfig(options.client_id, function(err,
-				gmailConfig) {
-			if (!err) {
-				logger.info("got config from database");
-				options.client_key = gmailConfig.secret;
-				var requiredDomains = gmailConfig.config.domains;
-				logger.info("veryfying email domains:" + requiredDomains);
-				if (requiredDomains !== null) {
-					logger.info("not null domains");
-					if (isVerifiedDomain(options.user.identity_id,
-							requiredDomains)) {
-						logger.info("email domain verified successfully");
-						authenticate(req, res, options);
-					} else {
-						logger.info("Unauthorized domain");
-						res.statusCode = 403;
-						res.message = "access from unauthorized domain";
-						res.end();
-					}
-				} else {
-					logger.info("null domains");
-					authenticate(req, res, options);
-				}
-
-			} else {
-				logger.error("unable to get config of the tenant: "
-						+ options.client_id);
-				res.statusCode = 401;
-				res.message = "access from unauthorized tenant";
-				res.end();
-			}
-		});
-	} else {
-		logger.debug("no tenant default authenticate");
-		options.client_id = config.client_id;
-		options.client_key = config.client_key;
-		authenticate(req, res, options);
-	}
-});
+router.get('/callback', gmailGetCallbackHandler);
 
 function isVerifiedDomain(email, requiredDomains) {
 	var emailDomain = email.split('@')[1];
@@ -126,11 +133,29 @@ function isVerifiedDomain(email, requiredDomains) {
 	return requiredDomainsArray.includes(emailDomain);
 }
 
+function getConfigStorageKey(id) {
+	return configKeyPrefix + id;
+}
+
+function generateNonce(stateJson) {
+	if (typeof (stateJson) === "undefined" || stateJson.length == 0) {
+		logger.debug("no state json string present, skipping nonce generation");
+		return;
+	}
+
+	logger.info("generating nonce..")
+	var nonce = uuid();
+	logger.info("persisting in redis");
+	client.set(nonce, stateJson, 'EX', config.redis.expiryInMinutes * 60);
+	logger.info("persistent in redis successfully for v2 google nonce:" + nonce);
+	return nonce;
+};
+
 function authenticate(req, res, options) {
 
 	var callBackUrl = options.callBackUrl;
     delete options.callBackUrl;
-    
+
 	superagent
 			.post(config.hostname + '/api/nucleus-auth/v1/authorize')
 			.send(options)
@@ -150,7 +175,7 @@ function authenticate(req, res, options) {
 								redirectUrl = callBackUrl
 							} else {
 								redirectUrl = domainName;
-							}		
+							}
 
 							if (redirectUrl.indexOf("?") >= 0) {
 								redirectUrl += "&access_token="
