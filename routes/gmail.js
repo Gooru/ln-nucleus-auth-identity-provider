@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var passport = require('passport')
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
-var config = require('../config');
+var config = require(process.env.CONFIG_FILE_PATH);
 var logger = require('../log');
 var authenticate = require('./authenticate');
 

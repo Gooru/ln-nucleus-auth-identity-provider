@@ -1,9 +1,0 @@
-{
-  "user": "nucleus", 
-  "database": "nucleus", 
-  "password": "nucleus", 
-  "host": "localhost", 
-  "port": 5432, 
-  "max": 5,
-  "idleTimeoutMillis": 30000
-}

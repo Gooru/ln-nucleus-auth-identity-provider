@@ -1,4 +1,4 @@
-const config = require('../config');
+const config = require(process.env.CONFIG_FILE_PATH);
 var WSFEDStrategy = require('passport-wsfed-saml2').Strategy;
 var PGEntitySSOConfig = require('../repositories/PGEntitySSOConfig');
 var PGEntitySSOConfig = new PGEntitySSOConfig();

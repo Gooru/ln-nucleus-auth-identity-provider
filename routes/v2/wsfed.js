@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var passport = require('passport');
-var config = require('../../config');
+var config = require(process.env.CONFIG_FILE_PATH);
 var logger = require('../../log');
 var queryString = require('qs');
 var superagent = require('superagent');
@@ -13,7 +13,7 @@ const configKeyPrefix = "WSFED-";
 router.get('/login', function(req, res, next) {
     logger.info("Version 2 : Wsfed  signin entry point ...");
     const domain = req.hostname;
-    
+
     if (typeof(domain) != 'undefined') {
         logger.info("searching for redirect Url for domain:" + domain);
 		WSFEDConfiguration.getConfig(domain, function(err, strategy, wsfedConfig) {
@@ -40,7 +40,7 @@ router.post("/login", (req, res, next) => {
   const wctx = req.body.wctx;
   const requestBody = {};
   const redirectUrl = wctx;
-  const domain = req.hostname; 
+  const domain = req.hostname;
 
   WSFEDConfiguration.getConfig(domain, function(err, strategy, wsfedConfig) {
   	passport.use(getConfigStorageKey(domain), strategy);
@@ -95,7 +95,7 @@ function authenticate(req, res, redirectUrl, requestBody, basicAuthToken) {
                 res.statusCode = 302;
                 if (typeof(redirectUrl) === "undefined" || redirectUrl.length <= 0) {
                     redirectUrl = domainName;
-                } 
+                }
                 redirectUrl += "?access_token=" + json.access_token;
                 res.setHeader('Location', redirectUrl);
             } else {
@@ -109,9 +109,9 @@ function authenticate(req, res, redirectUrl, requestBody, basicAuthToken) {
 
 }
 
-function getAppCredentials(request) { 
+function getAppCredentials(request) {
    var reqparams = {};
-   if (typeof(request.query.client_key) != 'undefined' && typeof(request.query.client_id) != 'undefined') { 
+   if (typeof(request.query.client_key) != 'undefined' && typeof(request.query.client_id) != 'undefined') {
        reqparams.client_id = request.query.client_id;
        reqparams.client_key = request.query.client_key;
    } else {
@@ -123,7 +123,7 @@ function getAppCredentials(request) {
    return reqparams;
 }
 
-function getConfigStorageKey(id) { 
+function getConfigStorageKey(id) {
     return configKeyPrefix + id;
 }
 

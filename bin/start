@@ -1,10 +1,17 @@
 #!/usr/bin/env node
 var debug = require('debug')('gooru-authentication');
-var app = require('../authentication');
-
-app.set('port', process.env.PORT || 3000)
-var server = app.listen(app.get('port'), function() {
-  debug('Express server listening on port ' + server.address().port);
-});
-
-
+var args = process.argv;
+var configFilePath = args[2];
+if (!configFilePath) {
+  console.log("App configuration filepath is missing, aborting..");
+  process.exit(1);
+} else {
+  debug("App configuration filepath: " + configFilePath);
+  process.env.CONFIG_FILE_PATH = configFilePath;
+  var config = require(configFilePath);
+  var app = require('../authentication');
+  app.set('port', config.appConfiguration.port)
+  var server = app.listen(app.get('port'), function() {
+    debug('Express server listening on port ' + server.address().port);
+  });
+}
