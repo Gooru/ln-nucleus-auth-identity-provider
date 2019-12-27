@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var passport = require('passport');
-var config = require('../../config');
+var config = require(process.env.CONFIG_FILE_PATH);
 var LOGGER = require('../../log');
 var queryString = require('qs');
 var superagent = require('superagent');
@@ -164,7 +164,7 @@ function parseContext(wctx) {
 	if(typeof(wctx) === "undefined" || wctx.length == 0) {
 		return wctxMap;
 	}
-	
+
 	var result = wctx.split(",");
 	result.forEach(function(element) {
 		var arrElements = element.split("=");

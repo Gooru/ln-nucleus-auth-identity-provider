@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var Passport = require('passport').Passport;
 var SamlStrategy = require('passport-saml');
-var config = require('../config');
+var config = require(process.env.CONFIG_FILE_PATH);
 var logger = require('../log');
 var authenticate = require('./authenticate');
 var fs = require('fs');
@@ -22,7 +22,7 @@ var shibStrategy = new SamlStrategy.Strategy({
 	issuer : config.shibboleth.issuer,
 	forceAuthn : config.shibboleth.forceAuthn,
 	identifierFormat : config.shibboleth.identifierFormat,
-	decryptionPvk : fs.readFileSync('./cert/privateKey.pem', 'utf8')
+	decryptionPvk : fs.readFileSync(config.shibboleth.certFilepath, 'utf8')
 }, function(profile, done) {
 	process.nextTick(function() {
 		return done(null, profile);
@@ -83,7 +83,7 @@ router.get('/generateMetadata', function(req, res) {
 	res.type('application/xml');
 	res.status(200).send(
 			shibStrategy.generateServiceProviderMetadata(fs.readFileSync(
-					'./cert/decryptionCert.pem', 'utf8')));
+					config.shibboleth.decryptionCertFilepath, 'utf8')));
 
 });
 

@@ -3,7 +3,7 @@
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
-		"start": " forever ./bin/start"
+		"start": " forever ./bin/start $*"
 	},
 	"dependencies": {
 		"express": "~4.9.0",

@@ -1,7 +1,7 @@
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 var PGEntitySSOConfig = require('../repositories/PGEntitySSOConfig');
 var ssoConfig = new PGEntitySSOConfig();
-const config = require('../config');
+const config = require(process.env.CONFIG_FILE_PATH);
 
 function GmailConfiguration() {
 };

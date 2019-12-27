@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var passport = require('passport');
 var wsfedsaml2 = require('passport-wsfed-saml2').Strategy;
-var config = require('../config');
+var config = require(process.env.CONFIG_FILE_PATH);
 var logger = require('../log');
 var authenticate = require('./authenticate');
 passport.use(new wsfedsaml2({

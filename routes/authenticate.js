@@ -1,4 +1,4 @@
-var config = require('../config');
+var config = require(process.env.CONFIG_FILE_PATH);
 var extend = require('util')._extend;
 var superagent = require('superagent');
 var logger = require('../log');

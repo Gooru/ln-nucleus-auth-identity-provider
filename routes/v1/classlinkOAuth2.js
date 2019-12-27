@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var passport = require('passport');
-var config = require('../../config');
+var config = require(process.env.CONFIG_FILE_PATH);
 var LOGGER = require('../../log');
 var ErrLogger = require('../../ErrorLog');
 var queryString = require('qs');
@@ -70,7 +70,7 @@ router.get("/callback", (req, res, next) => {
           };
 
 		  processAuthentication(req, res, redirectUrl, requestBody, districtInfo.district_id);
-          
+
         } else {
           var err = new Error("Unable to get profile information, Unauthorized Access");
           err.status = 401;
