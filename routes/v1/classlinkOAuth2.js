@@ -9,7 +9,7 @@ var superagent = require('superagent');
 var flatten = require('flat');
 var uuid = require('uuid-v4');
 var redis = require('redis'),
-	client = redis.createClient(config.redis.port, config.redis.host);
+  client = redis.createClient(config.redis.port, config.redis.host);
 
 
 var OAUTH2Config = require('./oauth2Configuration');
@@ -70,65 +70,65 @@ router.get("/callback", (req, res, next) => {
         return next(err);
       } else {
         var stateJson = JSON.parse(stateData);
-				var options = {};
-				if (stateJson.long_lived_access) {
-						LOGGER.info("Received Long Lived Access Token To Generate.");
-				}
-  OAUTH2Configuration.getConfig(shortname, function(err, strategy, oauth2Config) {
-
-    passport.use(getConfigStorageKey(shortname), strategy);
-
-    passport.authenticate(getConfigStorageKey(shortname), (err, accessToken, profile) => {
-      var profileUrl = oauth2Config.profile.api_url;
-      var authHeaderPlaceholder = oauth2Config.profile.auth_header_placeholder;
-      var profileResponseMapper = oauth2Config.profile.response_mapper;
-	    var districtResponseMapper = oauth2Config.profile.district_mapper;
-      var redirectUrl = oauth2Config.home_page_url;
-
-      profileInfo(req, res, profileUrl, authHeaderPlaceholder, accessToken, function(err, response) {
-        if (!err) {
-          var responseBody = flatten(response.body);
-          var profile = profileInfoMapper(profileResponseMapper, responseBody);
-		      var districtInfo = profileInfoMapper(districtResponseMapper, responseBody);
-          var requestBody = {
-            "grant_type": "oauth2",
-            "user": profile
-          };
-          if (stateJson.long_lived_access) {
-            requestBody.long_lived_access = stateJson.long_lived_access;
-          }
-          
-		  processAuthentication(req, res, next, redirectUrl, requestBody, districtInfo.district_id);
-
-        } else {
-          var err = new Error("Unable to get profile information, Unauthorized Access");
-          err.status = 401;
-          return next(err);
+        var options = {};
+        if (stateJson.long_lived_access) {
+          LOGGER.info("Received Long Lived Access Token To Generate.");
         }
-      });
-    })(req, res, next)
+        OAUTH2Configuration.getConfig(shortname, function(err, strategy, oauth2Config) {
+
+          passport.use(getConfigStorageKey(shortname), strategy);
+
+          passport.authenticate(getConfigStorageKey(shortname), (err, accessToken, profile) => {
+            var profileUrl = oauth2Config.profile.api_url;
+            var authHeaderPlaceholder = oauth2Config.profile.auth_header_placeholder;
+            var profileResponseMapper = oauth2Config.profile.response_mapper;
+            var districtResponseMapper = oauth2Config.profile.district_mapper;
+            var redirectUrl = oauth2Config.home_page_url;
+
+            profileInfo(req, res, profileUrl, authHeaderPlaceholder, accessToken, function(err, response) {
+              if (!err) {
+                var responseBody = flatten(response.body);
+                var profile = profileInfoMapper(profileResponseMapper, responseBody);
+                var districtInfo = profileInfoMapper(districtResponseMapper, responseBody);
+                var requestBody = {
+                  "grant_type": "oauth2",
+                  "user": profile
+                };
+                if (stateJson.long_lived_access) {
+                  requestBody.long_lived_access = stateJson.long_lived_access;
+                }
+
+                processAuthentication(req, res, next, redirectUrl, requestBody, districtInfo.district_id);
+
+              } else {
+                var err = new Error("Unable to get profile information, Unauthorized Access");
+                err.status = 401;
+                return next(err);
+              }
+            });
+          })(req, res, next)
+        });
+      }
+    } else {
+      LOGGER.error("failed to fetch state nonce from redis");
+      return next(err);
+    }
   });
- }
- } else {
-  LOGGER.error("failed to fetch state nonce from redis");
-  return next(err);
- }
- });
 });
 
 function processAuthentication(req, res, next, redirectUrl, requestBody, district) {
-	OAUTH2Configuration.getTenantMapping(district, function(err, tenantInfo) {
-			if (!err) {
-				LOGGER.info("tenant district mapping found");
-				const basicAuthToken = new Buffer((tenantInfo.tenant + ":" + tenantInfo.secret)).toString('base64');
-   				authenticate(req, res, redirectUrl, requestBody, basicAuthToken);
-			} else {
-				ErrLogger.error("District (tenant of classlink) with id '" + district + "' not found in Gooru")
-				var err = new Error("District mapping not found in Gooru, Unauthorized Access");
-            	err.status = 401;
-            	return next(err);
-			}
-		});
+  OAUTH2Configuration.getTenantMapping(district, function(err, tenantInfo) {
+    if (!err) {
+      LOGGER.info("tenant district mapping found");
+      const basicAuthToken = new Buffer((tenantInfo.tenant + ":" + tenantInfo.secret)).toString('base64');
+      authenticate(req, res, redirectUrl, requestBody, basicAuthToken);
+    } else {
+      ErrLogger.error("District (tenant of classlink) with id '" + district + "' not found in Gooru")
+      var err = new Error("District mapping not found in Gooru, Unauthorized Access");
+      err.status = 401;
+      return next(err);
+    }
+  });
 };
 
 function authenticate(req, res, redirectUrl, requestBody, basicAuthToken) {
@@ -213,17 +213,17 @@ function validateOAuth2ConfigSettings(OAUTH2Config) {
 }
 
 function generateNonce(stateJson) {
-	if (typeof (stateJson) === "undefined") {
-		LOGGER.debug("no state json string present, skipping nonce generation");
-		return;
-	}
+  if (typeof(stateJson) === "undefined") {
+    LOGGER.debug("no state json string present, skipping nonce generation");
+    return;
+  }
 
-	LOGGER.info("generating nonce..")
-	var nonce = uuid();
-	LOGGER.info("persisting in redis");
-	client.set(nonce, stateJson, 'EX', config.redis.expiryInMinutes * 60);
-	LOGGER.info("persistent in redis successfully for v2 classlink oauth2 nonce:" + nonce);
-	return nonce;
+  LOGGER.info("generating nonce..")
+  var nonce = uuid();
+  LOGGER.info("persisting in redis");
+  client.set(nonce, stateJson, 'EX', config.redis.expiryInMinutes * 60);
+  LOGGER.info("persistent in redis successfully for v2 classlink oauth2 nonce:" + nonce);
+  return nonce;
 };
 
 module.exports = router;
