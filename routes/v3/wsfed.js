@@ -23,6 +23,13 @@ router.get('/login/:shortname', function(req, res, next) {
 	LOGGER.info("v3 : wsfed signin entry point for partner :=" + shortname);
 
 	const context = req.query.context;
+	var stateJson = {
+		context: context
+	};
+	var longLivedAccess = req.query.long_lived_access;
+	if (longLivedAccess === 'true') {
+		stateJson.long_lived_access = true;
+	}
 
 	if (typeof (shortname) != 'undefined') {
 		WSFEDConfiguration.getConfig(shortname, function(err, strategy, wsfedConfig) {
@@ -31,7 +38,7 @@ router.get('/login/:shortname', function(req, res, next) {
 				passport.authenticate(getConfigStorageKey(shortname), {
 					failureRedirect : '/',
 					failureFlash : true,
-					wctx : generateNonce(context)
+					wctx : generateNonce(stateJson)
 				})(req, res, next);
 			} else {
 				return next(err);
@@ -97,7 +104,13 @@ router.post("/login/:shortname", (req, res, next) => {
 			} else {
 				client.get(nonce, function(err, reply) {
 					if (!err) {
-						processAuthentication(req, res, reply, requestBody, clientId);
+						var wctxMapJson = JSON.parse(reply);
+						if (wctxMapJson.long_lived_access) {
+								LOGGER.info("Received Long Lived Access Token To Generate.");
+								requestBody.long_lived_access = stateJson.long_lived_access;
+						}
+						var context = wctxMapJson.context ? wctxMapJson.context : wsfedConfig.homeRealm;
+						processAuthentication(req, res, context, requestBody, clientId);
 					} else {
 						processAuthentication(req, res, wsfedConfig.homeRealm, requestBody, clientId);
 					}

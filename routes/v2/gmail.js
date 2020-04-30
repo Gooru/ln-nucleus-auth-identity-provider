@@ -24,7 +24,7 @@ var gmailGetRouteHandler = function(request, response, next) {
 	logger.info("v2 Google signin entry point ...");
 
 	var tenantId = request.query.tenantId;
-	var longLivedToken = request.query.long_lived_token;
+	var longLivedAccess = request.query.long_lived_access;
 	logger.info("tenantId found in request:" + tenantId);
 
 	// If there is no tenant id in the request then fallback on default from
@@ -40,12 +40,11 @@ var gmailGetRouteHandler = function(request, response, next) {
 			passport.use(getConfigStorageKey(tenantId), strategy);
 			var stateJson = {
 				tenantId : tenantId,
-				redirectUrl : gmailConfig.config.redirectUrl || config.gmail.redirectUrl,
+				redirectUrl : gmailConfig.config.redirectUrl || config.gmail.redirectUrl
 			};
-			if (longLivedToken) {
-				stateJson.long_lived_token = longLivedToken;
+			if (longLivedAccess === 'true') {
+				stateJson.long_lived_access = true;
 			}
-
 			var stateNonce = generateNonce(JSON.stringify(stateJson));
 
 			passport.authenticate(getConfigStorageKey(tenantId), {
@@ -75,8 +74,8 @@ var gmailGetCallbackHandler = function(req, res, next)  {
 				var options = {};
 				options.client_id = stateJson.tenantId;
 				logger.info("Checking tenant:" + stateJson.tenantId);
-				if (stateJson.long_lived_token) {
-						logger.info("Received Long Lived Token To Generate.");
+				if (stateJson.long_lived_access) {
+						logger.info("Received Long Lived Access Token To Generate.");
 				}
 				GmailConfiguration.getConfig(options.client_id, function(err, strategy, gmailConfig) {
 					if (!err) {
@@ -94,8 +93,8 @@ var gmailGetCallbackHandler = function(req, res, next)  {
 								var requiredDomains = gmailConfig.config.domains;
 								logger.info("veryfying email domains:" + requiredDomains);
 								options.callBackUrl = stateJson.redirectUrl;
-								if (stateJson.long_lived_token) {
-									options.long_lived_token = stateJson.long_lived_token;
+								if (stateJson.long_lived_access) {
+									options.long_lived_access = stateJson.long_lived_access;
 								}
 								if (requiredDomains) {
 									logger.info("not null domains");

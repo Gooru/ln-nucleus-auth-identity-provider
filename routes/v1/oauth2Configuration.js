@@ -30,7 +30,7 @@ OAUTH2Configuration.prototype.getConfig = function(shortname, callback) {
             return done(null, accessToken, profile);
           })
         });
-        return callback(err, strategy, res.config);
+        return callback(err, strategy, res.config, res.id, res.secret);
       } else {
         return callback(err, null, null);
       }
@@ -46,7 +46,7 @@ OAUTH2Configuration.prototype.getTenantMapping = function(districtId, callback) 
 		PGEntityMapping.getTenantMapping(params, function(err, res) {
 			if (!err) {
 				return callback(err, res);
-			} else {	
+			} else {
 				return callback(err, null);
 			}
 		});
