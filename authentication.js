@@ -28,8 +28,9 @@ app.use('/api/nucleus-auth-idp/v1/saml', saml);
 app.use('/api/nucleus-auth-idp/v1/shibboleth', shibboleth);
 app.use('/api/nucleus-auth-idp/v2/wsfed', wsfedv2);
 app.use('/api/nucleus-auth-idp/v3/wsfed', wsfedv3);
-app.use('/api/nucleus-auth-idp/v1/oauth2', oauth2);
 app.use('/api/nucleus-auth-idp/v1/oauth2/classlink', classlink);
+app.use('/api/nucleus-auth-idp/v1/oauth2', oauth2);
+
 
 app.use(function(req, res, next) {
 	var err = new Error('Not Found');

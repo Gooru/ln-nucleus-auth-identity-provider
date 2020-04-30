@@ -30,7 +30,7 @@ OAUTH2Configuration.prototype.getConfig = function(shortname, callback) {
             return done(null, accessToken, profile);
           })
         });
-        return callback(err, strategy, res.config);
+        return callback(err, strategy, res.config, res.id, res.secret);
       } else {
         return callback(err, null, null);
       }
@@ -41,18 +41,18 @@ OAUTH2Configuration.prototype.getConfig = function(shortname, callback) {
 };
 
 OAUTH2Configuration.prototype.getTenantMapping = function(districtId, callback) {
-	const params = [districtId];
-	try {
-		PGEntityMapping.getTenantMapping(params, function(err, res) {
-			if (!err) {
-				return callback(err, res);
-			} else {	
-				return callback(err, null);
-			}
-		});
-	} catch (error) {
-    	return callback(error, null);
-  	}
+  const params = [districtId];
+  try {
+    PGEntityMapping.getTenantMapping(params, function(err, res) {
+      if (!err) {
+        return callback(err, res);
+      } else {
+        return callback(err, null);
+      }
+    });
+  } catch (error) {
+    return callback(error, null);
+  }
 };
 
 

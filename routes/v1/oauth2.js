@@ -10,6 +10,9 @@ var OAUTH2Config = require('./oauth2Configuration');
 var OAUTH2Configuration = new OAUTH2Config();
 const configKeyPrefix = "OAUTH2-";
 const MANDATORY_CONFIG_KEYS = ["authorization_url", "client_id", "token_url", "client_secret", "scope", "callback_url", "response_type", "profile.api_url", "profile.auth_header_placeholder", "profile.response_mapper.first_name"];
+var uuid = require('uuid-v4');
+var redis = require('redis'),
+  client = redis.createClient(config.redis.port, config.redis.host);
 
 router.get('/:shortname', function(req, res, next) {
   LOGGER.debug("V1: GET entry");
@@ -20,10 +23,18 @@ router.get('/:shortname', function(req, res, next) {
     OAUTH2Configuration.getConfig(shortname, function(err, strategy, OAUTH2Config) {
       if (!err) {
         if (validateOAuth2ConfigSettings(OAUTH2Config)) {
+          var stateJson = {};
+          var longLivedAccess = req.query.long_lived_access;
+          if (longLivedAccess === 'true') {
+            stateJson.long_lived_access = true;
+          }
+          var stateNonce = generateNonce(JSON.stringify(stateJson));
+
           passport.use(getConfigStorageKey(shortname), strategy);
           passport.authenticate(getConfigStorageKey(shortname), {
             failureRedirect: '/',
-            failureFlash: true
+            failureFlash: true,
+            state: stateNonce
           })(req, res, next);
         } else {
           LOGGER.info("Oauth2 config setting is not updated correctly, check  the mandatory key values.");
@@ -46,34 +57,57 @@ router.get("/:shortname/callback", (req, res, next) => {
   LOGGER.debug("v1: Processing GET Login request callback");
   const shortname = req.params.shortname;
   LOGGER.info("v1 : OAuth login callback entry point for partner :=" + shortname);
-
-  OAUTH2Configuration.getConfig(shortname, function(err, strategy, oauth2Config, clientId, secret) {
-
-    passport.use(getConfigStorageKey(shortname), strategy);
-
-    passport.authenticate(getConfigStorageKey(shortname), (err, accessToken, profile) => {
-      var profileUrl = oauth2Config.profile.api_url;
-      var authHeaderPlaceholder = oauth2Config.profile.auth_header_placeholder;
-      var profileResponseMapper = oauth2Config.profile.response_mapper;
-      var redirectUrl = oauth2Config.home_page_url;
-
-      profileInfo(req, res, profileUrl, authHeaderPlaceholder, accessToken, function(err, response) {
-        if (!err) {
-          var responseBody = flatten(response.body);
-          var profile = profileInfoMapper(profileResponseMapper, responseBody);
-          var requestBody = {
-            "grant_type": "oauth2",
-            "user": profile
-          };
-          const basicAuthToken = new Buffer((clientId + ":" + secret)).toString('base64');
-          authenticate(req, res, redirectUrl, requestBody, basicAuthToken);
-        } else {
-          var err = new Error("Unauthorized Access");
-          err.status = 401;
-          return next(err);
+  var stateNonce = req.query.state;
+  client.get(stateNonce, function(err, stateData) {
+    if (!err) {
+      if (!stateData) {
+        LOGGER.error("unable to get config of the tenant: ");
+        LOGGER.error(err);
+        var err = new Error("Unauthorized Access");
+        err.status = 401;
+        return next(err);
+      } else {
+        var stateJson = JSON.parse(stateData);
+        var options = {};
+        if (stateJson.long_lived_access) {
+          LOGGER.info("Received Long Lived Access Token To Generate.");
         }
-      });
-    })(req, res, next)
+        OAUTH2Configuration.getConfig(shortname, function(err, strategy, oauth2Config, clientId, secret) {
+
+          passport.use(getConfigStorageKey(shortname), strategy);
+
+          passport.authenticate(getConfigStorageKey(shortname), (err, accessToken, profile) => {
+            var profileUrl = oauth2Config.profile.api_url;
+            var authHeaderPlaceholder = oauth2Config.profile.auth_header_placeholder;
+            var profileResponseMapper = oauth2Config.profile.response_mapper;
+            var redirectUrl = oauth2Config.home_page_url;
+
+            profileInfo(req, res, profileUrl, authHeaderPlaceholder, accessToken, function(err, response) {
+              if (!err) {
+                var responseBody = flatten(response.body);
+                var profile = profileInfoMapper(profileResponseMapper, responseBody);
+                var requestBody = {
+                  "grant_type": "oauth2",
+                  "user": profile
+                };
+                if (stateJson.long_lived_access) {
+                  requestBody.long_lived_access = stateJson.long_lived_access;
+                }
+                const basicAuthToken = new Buffer((clientId + ":" + secret)).toString('base64');
+                authenticate(req, res, redirectUrl, requestBody, basicAuthToken);
+              } else {
+                var err = new Error("Unauthorized Access");
+                err.status = 401;
+                return next(err);
+              }
+            });
+          })(req, res, next)
+        });
+      }
+    } else {
+      LOGGER.error("failed to fetch state nonce from redis");
+      return next(err);
+    }
   });
 });
 
@@ -158,5 +192,19 @@ function validateOAuth2ConfigSettings(OAUTH2Config) {
   }
   return true;
 }
+
+function generateNonce(stateJson) {
+  if (typeof(stateJson) === "undefined") {
+    LOGGER.debug("no state json string present, skipping nonce generation");
+    return;
+  }
+
+  LOGGER.info("generating nonce..")
+  var nonce = uuid();
+  LOGGER.info("persisting in redis");
+  client.set(nonce, stateJson, 'EX', config.redis.expiryInMinutes * 60);
+  LOGGER.info("persistent in redis successfully for v2 oauth2 nonce:" + nonce);
+  return nonce;
+};
 
 module.exports = router;
